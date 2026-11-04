@@ -224,63 +224,17 @@ vision, speech, image generation and native quantization tools.
 
 ---
 
-## Quick start
+## Install from the USB image
 
-### Requirements
+1. Download `LexiSuite-testing.img.xz` from [Releases](../../releases) and check it against `SHA256SUMS`.
+2. Write it to a USB stick of 8 GB or more with balenaEtcher or Raspberry Pi Imager (both take the `.xz` directly), or
+   `xz -dc LexiSuite-testing.img.xz | sudo dd of=/dev/sdX bs=4M conv=fsync` (this erases the stick).
+3. Boot from the stick. Choose LexiKernel or Linux 7.3 at the menu. On first boot the data partition grows to fill
+   the stick.
+4. Open the Panel address shown on the screen (port 8090) and create the administrator account.
 
-- Rust 1.100.0-beta.5 (the pinned toolchain the tests and the installer use; `rustup toolchain install 1.100.0-beta.5`)
-- For the first build, network access so Cargo can fetch the locked dependencies (`cargo fetch --locked`)
-- A Vulkan driver for AMD or Intel GPUs, or the CUDA runtime for NVIDIA
-- `glslc` from the Vulkan SDK, for building the shaders
-
-### LexiEngine
-
-```bash
-cd lexipanel-rs/engine
-GLSLC=/path/to/glslc cargo build --release -p lexi-engine-server \
-    --features cuda,vulkan --bin lexi-engine
-
-./target/release/lexi-engine serve \
-    --backend vulkan --devices 0 \
-    -m /path/to/model.gguf --alias local \
-    -c 32768 --memory-budget-mib 23500 \
-    --host 127.0.0.1 --port 8080
-```
-
-### LexiPanel
-
-```bash
-cd lexipanel-rs
-cargo build --release -p lexi
-./target/release/lexi serve
-```
-
-Run this way, the Panel listens on `127.0.0.1:8094` (set `LEXI_LISTEN` to change it). On LexiOS and the USB image the
-Panel is on port 8090 on every network interface.
-
-A Linux or WSL developer install is also available:
-[`deploy/install-linux.sh`](lexipanel-rs/deploy/install-linux.sh) and
-[`deploy/windows/install-wsl.ps1`](lexipanel-rs/deploy/windows/install-wsl.ps1). The Linux script builds its installer
-offline with the pinned toolchain, so run `cargo fetch --locked` in `lexipanel-rs` first.
-
-### Tests
-
-Run tests with a throwaway `HOME` so they can't touch a live install, and leave `lexipanel-installer` out: its tests act on the machine.
-
-```bash
-# Engine
-cd lexipanel-rs/engine && cargo test --release --workspace --lib
-
-# Panel
-cd lexipanel-rs && HOME=$(mktemp -d) cargo test --release --workspace --exclude lexipanel-installer
-
-# LexiKernel and drivers
-cd lexios && cargo test -p lk-iommu -p lk-cpu -p lk-pci -p lk-boundary -p lk-init \
-    -p intel-nic -p realtek-nic -p xhci -p usb-class --lib --tests
-cargo test -p lk-kernel --lib --features development-untrusted-boot
-```
-
----
+The image has no models; add one from the Panel. LexiKernel needs an Intel machine with VT-d on and Secure Boot off
+(development signing). Linux 7.3 runs on most x86-64 PCs.
 
 ## API
 
