@@ -29,6 +29,8 @@ panel that runs it. Your hardware, your models, nothing in the cloud.
 
 ---
 
+All-In-One Image Download https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuite/LexiSuite-testing.img.xz
+
 ## Overview
 
 LexiSuite is four products built to work as one system:
