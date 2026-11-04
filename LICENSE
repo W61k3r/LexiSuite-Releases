@@ -1,0 +1,31 @@
+LexiSuite License
+
+Copyright (c) 2026 LexiPanel. All rights reserved, except as granted below.
+
+1. Free use
+   You may install, run and copy LexiSuite at no cost for public, private, personal
+   and educational use.
+
+2. Commercial use
+   Commercial use costs US$100 per instance per year. An instance is one
+   installation of LexiSuite running on one machine. A commercial licence includes
+   support and priority fixes for problems specific to the licensee's own hardware
+   and setup.
+
+3. Honour system
+   LexiSuite has no licence keys, activation or usage checks. Commercial users are
+   trusted to buy the licences they need.
+
+4. Source code
+   The source code is proprietary. This licence lets you run LexiSuite; it does not
+   grant the right to copy, modify, sell or redistribute the source code.
+
+5. No warranty
+   LexiSuite is provided "as is", without warranty of any kind. The authors are not
+   liable for any damages arising from its use.
+
+6. Third-party components
+   Third-party components included with LexiSuite keep their own licences. See
+   lexios/THIRD_PARTY_NOTICES.md, lexipanel-rs/engine/THIRD_PARTY_NOTICES.md and the
+   third-party-licenses directories. Linux 7.3, included in LexiOS images, is licensed
+   under GPL-2.0.
