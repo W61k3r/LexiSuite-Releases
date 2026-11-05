@@ -29,7 +29,7 @@ panel that runs it. Your hardware, your models, nothing in the cloud.
 
 ---
 
-All-In-One Image Download https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuite/LexiSuite-testing.img.xz
+All-In-One Image Download https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuiteT2/LexiSuite-testing2.img.xz
 
 ## Overview
 
