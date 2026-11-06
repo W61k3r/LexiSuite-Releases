@@ -29,7 +29,7 @@ panel that runs it. Your hardware, your models, nothing in the cloud.
 
 ---
 
-[All-In-One Image Download [https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuitet3/LexiSuite-testing3.img.xz](https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuitet3/LexiSuite-testing3.img.xz)
+[All-In-One Image Download [https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuitet3/LexiSuite-testing5.img.xz](https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuiteTesting5/LexiSuite-v0.1337.69.img.xz)
 
 ## Overview
 
@@ -313,7 +313,7 @@ The 2.5G RTL8125B driver runs on the chip's built-in microcode, and refuses othe
 
 ### Last test runs
 
-On commit `a7df5635`, 11/03/2026, all passing:
+On commit `e753de1`, 11/05/2026, all passing:
 
 | Suite | Passed | Failed |
 |---|---:|---:|
