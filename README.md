@@ -29,7 +29,7 @@ panel that runs it. Your hardware, your models, nothing in the cloud.
 
 ---
 
-[All-In-One Image Download [https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuitet3/LexiSuite-testing6.img.xz]](https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuitet6/LexiSuite-051033e-secureboot-dev.img.xz)
+[All-In-One Image Download [click this to download image]](https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuitet6/LexiSuite-051033e-secureboot-dev.img.xz)
 
 ## Overview
 
