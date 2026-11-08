@@ -2,6 +2,9 @@
 
 # LexiSuite
 
+DOWNLOAD LINK
+https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuiteT7/LexiSuite-1c5fa3c-secureboot-dev.img.xz
+
 ### OS / Kernel / Engine / Panel. All Rust.
 
 A complete local inference stack, from the kernel that boots the machine to the browser
@@ -9,8 +12,8 @@ panel that runs it. Your hardware, your models, nothing in the cloud.
 
 ![Language](https://img.shields.io/badge/language-Rust%202024-b7410e?style=flat-square)
 ![Rust](https://img.shields.io/badge/rust-1.100.0--beta.5-b7410e?style=flat-square)
-![Lines](https://img.shields.io/badge/Rust-1.77M%20lines-2b6cb0?style=flat-square)
-![Crates](https://img.shields.io/badge/crates-324-2b6cb0?style=flat-square)
+![Lines](https://img.shields.io/badge/Rust-1.85M%20lines-2b6cb0?style=flat-square)
+![Crates](https://img.shields.io/badge/crates-336-2b6cb0?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-Vulkan%20%7C%20CUDA-2f855a?style=flat-square)
 ![Status](https://img.shields.io/badge/status-development-d69e2e?style=flat-square)
 ![License](https://img.shields.io/badge/license-free%20personal%20%7C%20%24100%2Fyr%20commercial-4a5568?style=flat-square)
@@ -29,8 +32,6 @@ panel that runs it. Your hardware, your models, nothing in the cloud.
 
 ---
 
-[All-In-One Image Download [click this to download image]](https://github.com/W61k3r/LexiSuite-Releases/releases/download/LexiSuitet6/LexiSuite-051033e-secureboot-dev.img.xz)
-
 ## Overview
 
 LexiSuite is four products built to work as one system:
@@ -38,19 +39,129 @@ LexiSuite is four products built to work as one system:
 | Component | What it is | Where |
 |---|---|---|
 | **LexiEngine** | Native Rust inference server: GGUF models on Vulkan, CUDA and CPU, with compatible HTTP APIs | [`lexipanel-rs/engine`](lexipanel-rs/engine) |
-| **LexiPanel** | Authenticated browser control plane for models, instances, GPUs, storage and fleets | [`lexipanel-rs`](lexipanel-rs) |
-| **LexiOS** | Rust-first appliance OS on Linux 7.3: init, network, firewall, storage, setup, updates | [`lexios`](lexios) |
+| **LexiPanel** | Authenticated browser control plane for models, instances, GPUs, storage, fleets and virtual machines | [`lexipanel-rs`](lexipanel-rs) |
+| **LexiOS** | Rust-first appliance OS (Linux 7.4-rc1 in the current images): init, network, firewall, storage, setup, updates | [`lexios`](lexios) |
 | **LexiKernel** | Rust kernel with a Linux ABI, built around inference workloads | [`lexios/lexikernel`](lexios/lexikernel) |
 
 Why build the whole stack:
 
-- **It's fast on real cards.** On the 7900 XTX with draft-head speculation, LexiEngine is level with or ahead of
-  llama.cpp on every 27B row measured on 11/03/2026, up to 30% faster, and processes prompts up to 22% faster.
+- **It's fast on real cards.** On the 7900 XTX, LexiEngine is ahead of or level with the newest llama.cpp release
+  (b12180) on Qwen3.8 27B in every case measured on 11/06-11/07/2026 (engine `bd315194`): 12-24% faster without
+  speculation, up to 24% faster with draft-head speculation at long context, and 6-22% faster at prompt processing.
   See [Performance](#performance).
-- **One Rust codebase.** 1.77 million lines across 324 crates, from boot code to the browser UI.
+- **One Rust codebase.** 1.85 million lines across 336 crates, from boot code to the browser UI.
 - **Local by design.** Models, prompts and data stay on your machine.
-- **It boots from a stick.** A development USB image carries Linux 7.3 and LexiKernel side by side, and LexiKernel
-  has booted real hardware and served the Panel from it.
+- **It boots from a stick.** One USB image carries LexiOS on Linux 7.4-rc1 and LexiKernel side by side, boots with
+  Secure Boot on once its development certificate is enrolled, and LexiKernel has booted real hardware and served
+  the Panel from it.
+- **Security is the default, not an option.** Fail-closed checks at every layer, from the boot loader to the HTTP
+  routes, and about 4,600 tests whose job is to prove that something is refused. See [Security](#security).
+
+---
+
+## What it does
+
+### LexiPanel: every operation in one browser GUI
+
+One Panel, one interface: every page is rendered by the Panel server inside one shell with one navigation, and `/`
+opens the overview. 1,158 features are recorded in one registry, and every control shows its tooltip from it. The
+search box finds any feature by name. 58 guided tasks walk through multi-step jobs end to end (serve your first
+model, fit a model to this GPU, benchmark fairly against the newest reference build, back up and move the
+configuration, join a box and sync a model, boot an installer with GPU passthrough, import a TokenGate checkpoint and
+more): each step calls the same routes the pages use, with the signed-in user's own permissions, shows its result
+and offers undo where a step can be reversed. One permission rule decides every page, form and task step, so a
+viewer is never offered an administrator's page.
+
+| Area | Pages |
+|---|---|
+| Run models | Instances and parameters, engines and builds (LexiEngine, or an upstream llama.cpp release installed from the Builds tab), model library, download and upload, templates, chat (LexiChat), agents with per-tool permissions |
+| Measure and improve | Bench and benchmark comparison, Optimize and the optimization lab, Fit, GPU tuning and power caps, Train, Evaluate, Qualification, Lexification |
+| Operate | Status, statistics, metrics, logs, alerts, notifications, incidents, crash evidence, diagnostics and debug kits, hardware, workload, fleet and fabric, network, storage, backups with A/B recovery, maintenance, power options, virtual machines, files, terminal |
+| Help | Guided tasks, feature search, the feature reference and the first-run walkthrough |
+| Secure and administer | Access (users, roles, API keys), a sealed password vault, LexiGuard, appliance setup, licence and media, settings, appearance, release controls |
+
+The Panel also serves OpenAI-compatible and Anthropic Messages-compatible APIs, so existing clients work unchanged.
+
+### LexiEngine: inference
+
+- **Back ends:** Vulkan (AMD, Intel, NVIDIA), CUDA and CPU, measured on real cards; HIP, Metal and others are in the
+  tree. GGUF models; model code covers Llama, Mistral/Phi, Qwen and Gemma (including hybrid DeltaNet/attention
+  Qwen3.5 and 3.8), DeepSeek/GLM, gpt-oss and hybrid state-space models.
+- **Speed features:** multi-token prediction (MTP) and n-gram speculative decoding, a paged multi-sequence KV cache,
+  a cross-request radix prefix cache, shape-cached graph fusion, and tuned RDNA3 decode and attention kernels.
+- **Adapters:** GGUF LoRA adapters and control vectors, loaded at start or selected per request.
+- **TokenGate:** learned prefill token gating (arXiv 2610.26754). Imports a published PyTorch checkpoint and serves
+  it, trains new gates, and has gate kernels for the CPU, Vulkan (passing on the RX 7900 XTX) and CUDA (passing on
+  the RTX 2060). The Panel imports, binds, trains and compares gates. Gated serving is not yet faster than ungated in
+  our runs.
+
+### Typed decisions
+
+`POST /v1/decide` turns a model into a decision engine: yes/no, a 0-5 score, or one choice among 2-256 options,
+answered in a single forward pass with a probability for every option. Decision heads (closed-form heads on hidden
+states and rank-32 LoRA decision adapters) and an Auto-fit policy pick the readout. On the 7900 XTX with Qwen3.8 27B
+and a rank-32 adapter, all 60 cases of a small synthetic labelled set were correct with an expected calibration
+error of 0.72% (7.89% without the adapter). This is a functional check, not a general calibration claim.
+
+### Memory tiering and engram offload
+
+Models larger than VRAM are placed tier by tier, explicitly:
+- `--engram-tier auto|ram|nvme|gpu:device` places per-layer n-gram embedding tables ("engrams", 27 GB in some models)
+  in RAM, on NVMe or on a chosen GPU.
+- `--expert-placement auto|gpu|ram|split`, an expert cache and GPU warm sets place mixture-of-experts weights.
+- Tiered execution keeps parameters at home in CPU memory with a bounded GPU LRU, schedule-ahead staging and
+  optional NVMe spill; a strict memory planner does layer offload.
+- Placement modes that are not wired for a model fail closed with a reason instead of silently running slower.
+
+### An AI-first OS
+
+LexiOS exists to run models, nothing else. It boots straight into the Panel, finds the GPUs and their drivers,
+checks that the inference engine can use them, and keeps the system small enough to reason about. LexiKernel goes
+further and puts inference into the kernel's own design: an inference-first scheduling policy, serialized VRAM
+admission with pinned inference allocations and explicit LRU migration, kernel-mediated KV block residency across
+VRAM, pinned host memory and storage, a read-mostly page cache for model files, GPU telemetry and tuning, and a
+versioned `/dev/lexi-inference` interface for engines.
+
+### Visibility and diagnostics
+
+- **Live view:** a live hardware view streamed to the browser (CPU, memory, GPUs with clocks, power, temperatures and
+  VRAM), per-instance status, statistics and metrics, logs, alerts, notifications and incidents.
+- **Consoles:** both kernels draw a status console on the machine's own screen: the Panel address, network, GPU
+  devices and runtime, storage, Secure Boot and signing state, and the boot self-test summary.
+- **Self-test:** every LexiOS boot runs a self-test and records each check as passed, blocked or not run, with the
+  reason, instead of claiming more than it proved.
+- **Debug kits:** one click collects a boot collection (hardware, PCI, ACPI tables, IOMMU state, kernel and
+  LexiKernel logs, firmware, storage, engine capabilities and topology, the self-test and the Panel's failed-request
+  log) into one archive with a manifest, and never includes credentials.
+- **Evidence over guesses:** crash evidence is kept across restarts, LexiKernel writes its own log partition on the
+  boot stick, and engine start failures name their cause (for example the missing library).
+
+### Tuning, optimizing and fitting
+
+- **Fit:** explains any GGUF (tensor types, sizes, where they will live) and plans requantization to fit a target
+  card, with recipes. The quantization tools include Hessian-aware grid initialisation, GSQ, RCO (Riemannian
+  constrained optimisation of per-tensor quantisation types), resumable calibration with activation Grams and BF16
+  teacher targets, and quality evaluation.
+- **Optimize:** runs benchmark suites over parameter profiles and keeps the measured winners; Lexification probes the
+  hardware, plans an inference strategy and qualifies it.
+- **Tune:** GPU power caps and tuning, boot-time power profiles, and a host inference profile (huge pages, pinned
+  decode threads) that the engine reads but never writes.
+
+### Virtual machines
+
+`lexi-vmm` is the suite's own virtual machine monitor on KVM, written in safe Rust: every crate of the VM host forbids
+`unsafe`, and its system calls go through one documented wrapper crate. It boots Linux directly or through UEFI
+firmware, builds ACPI tables, and provides virtio block (raw and qcow2 images), network (a tap device or built-in
+user-mode NAT with DHCP and DNS), console, RNG, balloon and vsock devices, VFIO device assignment and snapshots. The
+monitor runs sandboxed (descriptor hygiene, identity drop, no new privileges) and is driven through a control socket.
+The Panel's Virtual machines page creates and boots VMs with either runner (QEMU stays available) and shows guest
+metrics and a live console.
+
+### Training
+
+LexiML trains and fine-tunes inside the suite: reproducible, backend-independent training with cached forward and
+gradient graphs, optimisers and LoRA fine-tuning, plus TokenGate gate training. Training jobs run from the Panel's
+Train page or `lexi-train`.
 
 ---
 
@@ -65,6 +176,7 @@ flowchart TB
 
     subgraph panel [LexiPanel]
         P[Auth, instances, models, storage, fleet]
+        VM[VM host: lexi-vmm on KVM]
     end
 
     subgraph engine [LexiEngine]
@@ -81,7 +193,7 @@ flowchart TB
     end
 
     subgraph kernels [Kernel, chosen at boot]
-        L[Linux 7.3]
+        L[Linux 7.4]
         K[LexiKernel]
     end
 
@@ -96,6 +208,7 @@ flowchart TB
     H --> S --> M
     M --> V & C & U
     P --> O
+    P --> VM
     O --> L & K
     V & C --> G
     L & K --> N
@@ -115,7 +228,7 @@ flowchart TB
 │   │   ├── lexi-hwinfo/     Hardware inventory
 │   │   ├── lexi-vm/         VM support
 │   │   └── xtask/           Build and release tasks
-│   ├── engine/              LexiEngine workspace, 159 crates
+│   ├── engine/              LexiEngine and the VM host, 169 crates
 │   ├── deploy/              Install scripts and packaging
 │   └── third-party-licenses/
 ├── lexios/
@@ -125,7 +238,7 @@ flowchart TB
 │   ├── tools/               LexiOS userland, 52 crates
 │   ├── .lexios/             Policies, configuration, fixtures
 │   └── third-party-licenses/
-├── docs/                    Binary test fixtures read by the test suites
+├── docs/                    Test fixtures and the wiki pages the tests and the wiki generator read
 ├── experimental/            Research code, not shipped
 └── tools/                   Build helpers
 ```
@@ -134,46 +247,46 @@ flowchart TB
 
 ## Performance
 
-Qwen3.8 27B on a Radeon RX 7900 XTX, measured on 11/03/2026 against llama.cpp on the same machine in the same
-session: LexiEngine from commit `a7df5635`, llama.cpp b11954 (Vulkan, flash attention). Intel i7-9700, XTX capped
-at 291 W, Linux 7.3. Both use a Q4_1 KV cache and a 131,072-token context. Each prompt carries a random prefix,
-so nothing is served from a cache.
+Qwen3.8 27B on a Radeon RX 7900 XTX against the newest llama.cpp release (b12180, Vulkan, flash attention), measured
+on 11/06/2026 on the same machine with the same harness: Intel i7-9700, XTX capped at 291 W, Linux 7.3, Q4_1 KV cache,
+131,072-token context, one slot, no cache reuse, a random prefix on every prompt, idle box. Generation is tokens per
+second after the first token, the median of three runs (68k is one request). Greedy output text is identical across
+LexiEngine builds.
 
-`short` is "What is 2+2? Answer with just the number.", up to 64 tokens, three runs. `3.6k` and `20k` are prompts of
-3,628 and 20,971 tokens, then up to 32 tokens. Generation is tokens per second after the first token; each figure
-is the median of its runs. Draft-head speculation (MTP) proposes two tokens on both engines.
+### Generation (tok/s) at short / 3.6k / 21k / 68k tokens of context
 
-### 7900 XTX: Qwen3.8 27B IQ4_XS
+LexiEngine `bd315194` against llama.cpp b12180, measured 11/06-11/07/2026 with nothing else running beside any run.
+`bd315194` is the engine in the published USB image (`051033e`); the runs were made on the benchmark host's own
+Linux 7.3 install, not booted from the image. The engine in this source adds TokenGate serving, cancellation on client
+disconnect and the verification-kernel change below; it has not been re-measured yet.
 
-| Row | LexiEngine | llama.cpp | |
-|---|---:|---:|---|
-| MTP, short | **72.3** | 62.4 | **+16%** |
-| MTP, 3.6k | 77.0 | 76.0 | level |
-| MTP, 20k | 66.8 | 66.8 | level |
-| Prompt, 3.6k (tok/s) | **920** | 756 | **+22%** |
-| Prompt, 20k (tok/s) | **844** | 712 | **+19%** |
-| First token, 3.6k | **3.9 s** | 4.8 s | **18% sooner** |
-| First token, 20k | **24.9 s** | 29.4 s | **16% sooner** |
-| No MTP, short / 3.6k / 20k | 38.1 / 37.7 / 34.7 | 39.0 / 40.7 / 38.4 | 2 to 10% behind |
+| Model and mode | LexiEngine | llama.cpp b12180 | LexiEngine ahead by |
+|---|---|---|---|
+| IQ4_XS, no MTP | **50.4 / 48.1 / 46.6 / 42.0** | 42.8 / 41.2 / 38.7 / 33.8 | **17% to 24%** |
+| IQ4_XS, MTP | **79.2 / 82.4 / 77.1 / 65.0** | 68.6 / 78.6 / 65.7 / 55.7 | **5% to 17%** |
+| Q4_K_M, no MTP | **42.9 / 41.4 / 39.9 / 36.5** | 38.2 / 36.6 / 34.8 / 30.8 | **12% to 18%** |
+| Q4_K_M, MTP | **66.5 / 70.4 / 65.2 / 56.5** | 66.1 / 70.3 / 56.9 / 45.6 | level at short and 3.6k, **15% / 24%** at 21k / 68k |
 
-### 7900 XTX: Qwen3.8 27B Q4_K_M
+### Prompt processing (tok/s) at 3.6k / 21k / 68k tokens
 
-| Row | LexiEngine | llama.cpp | |
-|---|---:|---:|---|
-| MTP, short | **69.4** | 59.9 | **+16%** |
-| MTP, 3.6k | **69.9** | 55.7 | **+25%** |
-| MTP, 20k | **68.3** | 52.6 | **+30%** |
-| Prompt, 3.6k (tok/s) | **875** | 727 | **+20%** |
-| Prompt, 20k (tok/s) | **804** | 679 | **+18%** |
-| First token, 3.6k | **4.2 s** | 5.0 s | **17% sooner** |
-| First token, 20k | **26.1 s** | 30.9 s | **16% sooner** |
-| No MTP, short / 3.6k / 20k | 34.6 / 33.4 / 30.8 | 34.7 / 34.0 / 34.4 | level to 11% behind |
+| Model | LexiEngine | llama.cpp | LexiEngine ahead by |
+|---|---|---|---|
+| IQ4_XS | **923 / 855 / 663** | 871 / 783 / 543 | **6% / 9% / 22%** |
+| Q4_K_M | **875 / 814 / 637** | 825 / 747 / 525 | **6% / 9% / 21%** |
 
-With draft-head speculation, the way the Panel runs it, LexiEngine is level with or ahead of llama.cpp in every row,
-and its prompt processing is faster in every mode. Plain generation at long context is the remaining gap.
-Other models and the RTX 2060 have not been re-measured on this commit, so they are not listed here.
+(Prompt processing measured with engine build `c5dd9d0e` against llama.cpp b12177.)
 
-### 7900 XTX: Qwen3 1.7B Q4_K_M, LexiOS from the USB image
+LexiEngine is ahead of or level with llama.cpp in every measured case. Q4_K_M with MTP at short prompts was about 5%
+below the previous engine build; the cause was the 64-lane kernels in the two- and three-token verification passes,
+which keep 32 lanes in this source (`LEXI_VK_WAVE64_VERIFY=1` restores the 64-lane ones). Not yet re-measured.
+
+The gains of 11/06 came from removing a per-allocation host
+cost that left the GPU idle about 4.7 ms per token, half-subgroup and 64-lane Q4_K/Q6_K and eight-lane IQ4_XS decode
+kernels, a long-context decode attention kernel (68k keys: 1029 to 321 us per layer), a recycled decode activation pool,
+fused FFN gate/up/SwiGLU passes and a split DeltaNet step. Decode is GPU-bound; the next target is about 80% of the
+card's 960 GB/s without speculation (about 47 tok/s on Q4_K_M and 53 on IQ4_XS for short prompts).
+
+### 7900 XTX: Qwen3 1.7B Q4_K_M, LexiOS from the USB image (11/04, before the 11/06 engine work)
 
 Measured on 11/04/2026 (UTC) on a second 7900 XTX (Ryzen 9 5900X), LexiOS on Linux 7.3 booted from the USB stick,
 through the Panel over the network. Same model and settings on both engines: 8,192-token context, f16 KV cache,
@@ -191,21 +304,53 @@ next performance target.
 
 ---
 
-## Status, 11/04/2026
+## Status, 11/08/2026
 
-- USB release image built from this source: 3 GiB, no models. On first boot the LEXIDATA partition and filesystem
-  grow to fill the stick under either kernel (verified on a 32 GiB disk in a VM: Linux 7.3 and LexiKernel both reach
-  a working Panel). Not yet verified on a physical stick.
-- The image is signed with a development owner key, not a production key. With Secure Boot on, LexiKernel refuses
-  to start until that certificate is enrolled.
-- LexiKernel: the Intel I219 network driver now completes the PHY low-power exit and logs link and DHCP events;
-  the ThinkPad P71 gets its address within a second on two consecutive boots. The console does not yet show
-  LEXIDATA free space.
-- LexiKernel GPU: a native Rust AMD Navi 31 (RDNA3) driver has been integrated as offline software (firmware boot,
-  power, GPU memory, interrupts, compute queues, copy engines, reset, DRM render-node backend) and passes its mock
-  and kernel test suites. It has not run on hardware; GPU work under LexiKernel still uses the Linux driver-domain
-  guest. Vulkan on the native driver is not yet available.
-- Panel: every tab, including System, is served inside the one shared Panel shell.
+New in this source (11/08), all in LexiKernel, from its first start on a Ryzen desktop (MSI X570, Ryzen 9 5900X):
+- **Devices behind PCIe ports get DMA.** LexiKernel closed every PCIe port to DMA at boot and never reopened it, so on
+  that board all three USB controllers halted and the boot stick was never found. A device's path of ports is now
+  opened when it starts DMA. QEMU's ports don't enforce this, so the VM qualification now traces what the kernel writes
+  to them and fails if a port is left closed.
+- **Unverified development boot.** On a PC that runs the stick without verifying it (Secure Boot off, or the
+  certificate not in db), a development image asks before starting LexiKernel; press Y to continue. Its status page
+  and the LexiOS console then say "Secure Boot: NOT VERIFIED by this PC's firmware". Production images still refuse.
+- **CPUs without PCID** (that Ryzen reported INVPCID but not PCID): address spaces run untagged.
+- **Diagnostics on screen.** A USB controller that fails reports its status registers and ports, IOMMU events of
+  every type are reported, and the stop page shows these lines under the reason, for PCs without a serial port.
+- **Panel on LexiKernel:** recording an event no longer restarts the Panel (its syscall filter allows fdatasync).
+
+From 11/07: one native Panel interface with tooltips, feature search and 58 guided tasks; the Rust VM host
+`lexi-vmm`; TokenGate end to end; a client disconnect cancels non-streaming generation; console setup code for
+enrollment from another computer; LexiKernel CPU time and storage usage from real accounting; split GGUF deletion as a
+set; a Power page that loads in seconds.
+
+Images: the published image (download link above) is `051033e`, the 11/06 code. A Secure Boot test image of this
+source, `1c5fa3c`, passed the VM qualification: LexiKernel first and second start, rollback variable creation, the
+Linux entry, an AMD IOMMU boot, a Ryzen 5000 CPU model without PCID, devices behind PCIe ports, and refusal of an
+unenrolled stick, a tampered rollback file and a tampered kernel. It has not yet been booted on the Ryzen desktop where
+the earlier images stopped. What the `051033e`
+image established:
+
+- Development USB image with Secure Boot (Linux entry on 7.4-rc1): signed with the LexiSuite development certificate.
+  After that certificate is appended to the PC's db (the Microsoft keys stay), both menu entries boot with Secure Boot
+  on. Verified in a VM from an unenrolled state: LexiKernel first and second start (it creates and then reuses its
+  rollback-protection variable) and with an AMD IOMMU, Linux 7.4 to a working Panel, and refusals of a stick without
+  enrollment, a tampered rollback file and a tampered kernel. Not yet started on a physical Secure Boot PC.
+- Upstream llama.cpp runs on LexiOS without third-party libraries: LexiOS ships original Rust implementations of the
+  runtime interfaces it loads (libgomp, libcrypto, libssl). llama.cpp b12180 against them gives identical greedy text
+  on CPU and on Vulkan and the same speed (within 1%), and HTTPS model downloads work through its own HTTP client,
+  with certificate verification. TLS older than 1.2, TLS 1.2 without extended master secret, client certificates and
+  encrypted private keys are refused with a clear error.
+- On first boot the LEXIDATA partition and filesystem grow to fill the stick under either kernel, verified on a
+  physical stick and in a VM.
+- Panel, tested in a real headless browser on both kernels. Defects found this way are fixed (uploads into system
+  folders, storage status on a fresh install, start-at-boot without systemd, engine start errors that now name the
+  missing library, chat sends before the model list loads, the consoles' Secure Boot rows, LexiKernel's console page
+  on Secure Boot images). On LexiKernel, features it does not provide say so in the GUI.
+- The Panel keeps a log of failed requests, so a debug kit records GUI failures.
+- LexiKernel GPU: a native Rust AMD Navi 31 (RDNA3) driver is integrated as offline software and passes its mock and
+  kernel test suites. It has not run on hardware; GPU work under LexiKernel still uses the Linux driver-domain guest.
+- The image is development-signed, not production-signed.
 
 ---
 
@@ -226,17 +371,63 @@ vision, speech, image generation and native quantization tools.
 
 ---
 
-## Install from the USB image
+## Quick start
 
-1. Download `LexiSuite-testing.img.xz` from [Releases](../../releases) and check it against `SHA256SUMS`.
-2. Write it to a USB stick of 8 GB or more with balenaEtcher or Raspberry Pi Imager (both take the `.xz` directly), or
-   `xz -dc LexiSuite-testing.img.xz | sudo dd of=/dev/sdX bs=4M conv=fsync` (this erases the stick).
-3. Boot from the stick. Choose LexiKernel or Linux 7.3 at the menu. On first boot the data partition grows to fill
-   the stick.
-4. Open the Panel address shown on the screen (port 8090) and create the administrator account.
+### Requirements
 
-The image has no models; add one from the Panel. LexiKernel needs an Intel machine with VT-d on and Secure Boot off
-(development signing). Linux 7.3 runs on most x86-64 PCs.
+- Rust 1.100.0-beta.5 (the pinned toolchain the tests and the installer use; `rustup toolchain install 1.100.0-beta.5`)
+- For the first build, network access so Cargo can fetch the locked dependencies (`cargo fetch --locked`)
+- A Vulkan driver for AMD or Intel GPUs, or the CUDA runtime for NVIDIA
+- `glslc` from the Vulkan SDK, for building the shaders
+
+### LexiEngine
+
+```bash
+cd lexipanel-rs/engine
+GLSLC=/path/to/glslc cargo build --release -p lexi-engine-server \
+    --features cuda,vulkan --bin lexi-engine
+
+./target/release/lexi-engine serve \
+    --backend vulkan --devices 0 \
+    -m /path/to/model.gguf --alias local \
+    -c 32768 --memory-budget-mib 23500 \
+    --host 127.0.0.1 --port 8080
+```
+
+### LexiPanel
+
+```bash
+cd lexipanel-rs
+cargo build --release -p lexi
+./target/release/lexi serve
+```
+
+Run this way, the Panel listens on `127.0.0.1:8094` (set `LEXI_LISTEN` to change it). On LexiOS and the USB image the
+Panel is on port 8090 on every network interface.
+
+A Linux or WSL developer install is also available:
+[`deploy/install-linux.sh`](lexipanel-rs/deploy/install-linux.sh) and
+[`deploy/windows/install-wsl.ps1`](lexipanel-rs/deploy/windows/install-wsl.ps1). The Linux script builds its installer
+offline with the pinned toolchain, so run `cargo fetch --locked` in `lexipanel-rs` first.
+
+### Tests
+
+Run tests with a throwaway `HOME` so they can't touch a live install, and leave `lexipanel-installer` out: its tests act on the machine.
+
+```bash
+# Engine
+cd lexipanel-rs/engine && cargo test --release --workspace --lib
+
+# Panel
+cd lexipanel-rs && HOME=$(mktemp -d) cargo test --release --workspace --exclude lexipanel-installer
+
+# LexiKernel and drivers
+cd lexios && cargo test -p lk-iommu -p lk-cpu -p lk-pci -p lk-boundary -p lk-init \
+    -p intel-nic -p realtek-nic -p xhci -p usb-class --lib --tests
+cargo test -p lk-kernel --lib --features development-untrusted-boot
+```
+
+---
 
 ## API
 
@@ -296,14 +487,61 @@ The 2.5G RTL8125B driver runs on the chip's built-in microcode, and refuses othe
 
 ---
 
-## Security model
+## Security
 
-- **IOMMU required.** Network drivers refuse to bind without isolated DMA.
-- **Rust first.** 308 of 374 crate roots forbid `unsafe` outright.
-- **Fail closed.** Unknown hardware revisions and unsupported shapes are refused, not guessed at.
-- **Authenticated Panel.** One-time setup code, CSRF and origin checks on mutating requests.
-- **Key-only SSH on development images.** The build carries a public key only. Release images refuse the option.
-- **Build-neutral binaries.** Release builds remap paths, and media builds are scanned for private strings.
+The ethos: **refuse what cannot be proven safe, and prove the refusals.** Every layer checks its inputs and fails
+closed, and the test suite spends as much effort on what must be refused as on what must work.
+
+**By the numbers (this source):**
+- 325 of 385 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 162 of 4,112 Rust files
+  (drivers, the kernel's hardware paths, the VM host's system-call wrapper and FFI boundaries).
+- 15,536 test functions, of which about 4,600 are named for refusal, tamper, malformed-input, bounds or forgery cases.
+
+**Boot and kernel**
+- Secure Boot chain signed with the LexiSuite development certificate; tampered kernels and rollback files are
+  refused, and LexiKernel creates and verifies its own anti-rollback state in firmware.
+- LexiKernel verifies SMEP, SMAP, write protection and NX live at boot, checks UMIP, shadow stacks and IBT, audits
+  for writable-and-executable aliases, and enforces a user policy, seccomp, Landlock, lockdown and audit logging.
+- An IOMMU is required: network drivers refuse to bind without isolated DMA.
+- Unknown hardware revisions and unsupported shapes are refused, not guessed at.
+
+**OS**
+- The firewall is verified by PID 1 at boot, and the boot fails closed without it.
+- Executables are admitted only from the verified image; a self-test on every boot reports what it could and could
+  not prove.
+
+**Panel**
+- Passwords are hashed with scrypt; access is by roles (admin, operator, models, backups and more) and scoped API
+  keys; mutating requests are origin-checked, rate-limited and audit-logged; a Content-Security-Policy limits
+  scripts and styles to the Panel itself.
+- A sealed password vault, a home-rooted file manager with read-only system folders, and an admin-only terminal.
+- LexiGuard is a deterministic, fail-closed gate in front of agent tool execution: tool calls run only under policy,
+  and calls that need a person wait for one.
+- One permission function decides every Panel page, form and guided-task step; tests cover
+  a multi-user administrator, a viewer, the single-user owner on the machine itself and an unauthenticated caller.
+- First-boot enrollment from another computer needs the setup code shown on the machine's own console (both
+  kernels); a browser on the machine itself may leave it out, but a code it sends must be right.
+- Failed requests are logged, so a debug kit records GUI failures; debug kits never collect credentials.
+
+**Engine**
+- Defense-in-depth hardening for untrusted model files and HTTP requests; inputs are bounded.
+- The inference server refuses non-loopback cleartext listeners and points remote users to a TLS front end.
+
+**Updates and builds**
+- Updates use Ed25519-signed manifests with bounded inputs and rollback state.
+- Release builds remap paths, and media builds are scanned for private strings. Development images carry a public
+  SSH key only; release images refuse the option.
+
+## Reliability and redundancy
+
+- A supervisor starts services in dependency order, restarts them under policy, and stops descendants before their
+  parent; a hardware watchdog is used when the platform has one (WDAT or iTCO).
+- Crash evidence is committed to storage before a restart, and the Panel's Crashes page shows it.
+- Backups with A/B verification and recovery; configuration backup, restore and transfer.
+- Safe restarts drain requests first; the fleet view manages several boxes.
+- Two inference engines (LexiEngine and upstream llama.cpp) behind the same Panel.
+- Every engine decode change of 11/06 keeps an environment switch, so it can be turned off without a rebuild.
+- A client that disconnects cancels its generation, streaming or not, so abandoned requests stop using the GPU.
 
 ---
 
@@ -313,39 +551,59 @@ The 2.5G RTL8125B driver runs on the chip's built-in microcode, and refuses othe
 
 ### Last test runs
 
-On commit `e753de1`, 11/05/2026, all passing:
+On the code in this source (main `576aed04`), 11/07/2026:
 
-| Suite | Passed | Failed |
-|---|---:|---:|
-| LexiEngine workspace | 3,724 | 0 |
-| LexiEngine server | 521 | 0 |
-| LexiPanel | 2,106 | 0 |
-| LexiPanel integration | 68 | 0 |
-| LexiOS tools | 1,083 | 0 |
-| LexiKernel core, PCI and xHCI | 627 | 0 |
-| Linux ABI | 287 | 0 |
+| Check | Result |
+|---|---|
+| Compile check, all four workspaces (engine, Panel, LexiOS, LexiKernel) | passed |
+| LexiEngine workspace tests, including the VM host crates | 3,997 passed, 0 failed |
+| LexiEngine server tests, CUDA and Vulkan | 534 passed, 0 failed |
+| TokenGate, scheduler, KV and prefix caches, server, Vulkan and CUDA kernel packages | 1,037 passed, 0 failed |
+| Panel library and support crates | 2,288 passed, 0 failed |
+| Panel library and integration tests (run in parallel) | 3,398 passed; 1 timing-sensitive test failed only under the parallel load and passes when run alone (3 of 3) |
+| Panel tests that build 21 GB of files | both pass (run with enough temporary space) |
+| Host firewall test, five repeats | 5 of 5 passed |
+| LexiOS tools | 1,105 passed, 0 failed |
+| LexiOS appliance, storage, setup and network packages | 443 passed, 0 failed |
+| LexiOS package manager, compatibility qualification, trust tool and driver-domain relay | 54 passed, 0 failed |
+| LexiKernel, three suites (console, IOMMU, network, ACPI, xHCI, PCI, procfs, Linux ABI, contracts, kernel library; some packages run in more than one) | 810, 864 and 291 passed, 0 failed |
+| Wiki checker | passed |
 
 ### Proven
 
-- Qwen3.8 27B on the 7900 XTX at or above llama.cpp speed with draft-head speculation (see [Performance](#performance)).
-- **LexiKernel boots on real hardware.** On 11/03/2026 it booted a Lenovo ThinkPad P71 (i7-7700HQ) from USB, brought
-  up the network, served the Panel to another machine and showed the local console.
-- On LexiKernel, the Panel's Start button runs the engine and a chat completes, in QEMU with the same CPU flags as
-  that laptop.
-- Linux 7.3 and LexiKernel boot from one image.
+- Qwen3.8 27B on the 7900 XTX ahead of or level with the newest llama.cpp in every measured case (see
+  [Performance](#performance)).
+- **LexiKernel boots on real hardware.** A Lenovo ThinkPad P71 (i7-7700HQ) booted it from USB, got its address over
+  DHCP, served the Panel to another machine and showed the local console.
+- One USB image boots LexiOS on Linux 7.4-rc1 and LexiKernel, with Secure Boot on (in a VM), and grows its data
+  partition to fill a physical stick on first boot.
+- Upstream llama.cpp runs on LexiOS on original Rust runtime libraries.
+- TokenGate gate kernels on the RX 7900 XTX (Vulkan) and RTX 2060 (CUDA).
+- The Rust VM host runs guest code on real KVM in its test suite.
 
 ### Not yet proven
 
-- GPU inference on LexiKernel on real hardware. LexiKernel drives GPUs only through a Linux guest in QEMU so far.
-- The RTL8125B driver has never run on a real chip.
+- Booting the Secure Boot image on a physical Secure Boot PC.
+- LexiKernel on real AMD hardware (proven in a VM with an AMD IOMMU).
+- GPU inference on LexiKernel on real hardware: it drives GPUs only through a Linux guest so far, and the native
+  RDNA3 driver has not run on a card.
+- The RTL8125B driver on a real chip.
+- LexiKernel's CPU and storage readouts on real hardware (tested in VMs and suites).
+- VFIO device assignment in the Rust VM host with a real device.
+- A gated TokenGate model serving faster than the same model ungated.
 
 ### Known gaps
 
-- Plain generation (no draft head) at long context trails llama.cpp by up to 11% on the 27B.
 - LexiKernel runs all of a process's threads on one CPU, so CPU inference there is far slower than on Linux.
-- Most of the Panel's System pages call Linux tools that LexiKernel doesn't provide yet, and one engines page stops
-  the Panel there until it restarts.
-- A client disconnect doesn't yet cancel a non-streaming request.
+- The engine in this source has not been re-measured since the verification-kernel change (see
+  [Performance](#performance)).
+- TokenGate: gated prefill on the CPU was slower than ungated on the one published checkpoint tried, and that
+  checkpoint did not answer the record-list test prompts even ungated (it was trained on essays and chat).
+- One LexiKernel browser audit froze right after the console page appeared (1 of 5 boots of the `051033e` image); the
+  cause is not yet known.
+- Panel clean-up left: some older API routes keep their own role checks, the retired page's form handlers and two of
+  its scripts are still compiled in, and a few timing-sensitive tests can fail when the whole suite runs in parallel
+  on a loaded machine (they pass when run alone).
 
 ---
 
