@@ -13,7 +13,8 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Download:** development USB images are published at
+**Download:** the newest development USB image, `795b4a9` (11/11/2026), is on Hugging Face at
+[huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite); earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
 guide is the [wiki](https://github.com/W61k3r/LexiSuite-Releases/wiki). Flash the image to a USB stick, boot it, and
 open the address shown on the screen.
@@ -503,8 +504,8 @@ From 11/07: feature tooltips, feature search and 58 guided tasks (in the Help me
 enrollment from another computer; LexiKernel CPU time and storage usage from real accounting; split GGUF deletion as a
 set; a Power page that loads in seconds.
 
-Images: the published image (download link above) is `051033e`, the 11/06 code. A Secure Boot development image of
-this source with Linux 7.4-rc2, `0839e30`, passed the VM qualification: LexiKernel first and second start, rollback variable creation,
+Images at that point: the published image was `051033e`, the 11/06 code. A Secure Boot development image of
+that source with Linux 7.4-rc2, `0839e30`, passed the VM qualification: LexiKernel first and second start, rollback variable creation,
 the Linux entry, an AMD IOMMU boot, a Ryzen 5000 CPU model without PCID, devices behind PCIe ports, and refusal of an
 unenrolled stick, a tampered rollback file and a tampered kernel. It has not yet been booted on the Ryzen desktop where
 the earlier images stopped. What the `051033e`
@@ -732,7 +733,7 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On the code in this source (main `5f859a72`), 11/10/2026, every job run on that exact commit:
+On the code in this source (main `795b4a9d`), 11/11/2026, every job run on that exact commit:
 
 | Check | Result |
 |---|---|
@@ -740,14 +741,17 @@ On the code in this source (main `5f859a72`), 11/10/2026, every job run on that 
 | LexiEngine workspace tests, including the VM host crates | 4,002 passed, 0 failed |
 | LexiEngine server tests, CUDA and Vulkan | 534 passed, 0 failed |
 | TokenGate, scheduler, KV and prefix caches, server, Vulkan and CUDA kernel packages | 1,040 passed, 0 failed |
-| Panel library and support crates | 2,289 passed, 0 failed |
+| Panel library and support crates | 2,292 passed, 0 failed |
 | Panel integration targets | 72 passed, 0 failed |
 | Panel tests that build 21 GB of files | both pass |
 | Host firewall test, five repeats | 5 of 5 passed |
 | LexiOS tools | 1,105 passed, 0 failed |
 | LexiOS appliance, storage, setup and network packages | 367 passed, 0 failed |
 | LexiOS package manager, compatibility qualification, trust tool and driver-domain relay | 54 passed, 0 failed |
-| LexiKernel, four suites (console, IOMMU, network, ACPI, xHCI, procfs, Linux ABI, kernel library; some packages run in more than one) | 812, 865, 662 and 291 passed, 0 failed |
+| LexiKernel, four suites (console, IOMMU, network, ACPI, xHCI, procfs, Linux ABI, kernel library, GPU drivers; some packages run in more than one) | 820, 877, 671 and 296 passed, 0 failed |
+
+The engine's Vulkan tests run on the GPU: on this commit they ran on the RX 7900 XTX. With the XTX handed to a virtual
+machine they run on the Intel UHD 630, where one precision test misses its tolerance by 0.0000003.
 
 ### Proven
 
