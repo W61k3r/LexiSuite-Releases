@@ -147,7 +147,7 @@ against llama.cpp release b12230 (Vulkan, flash attention) with identical settin
 | DeepSeek-V2-Lite Q4_K_M: generation at 14,000 tokens of context | **159.0 tok/s** | 110.1 tok/s |
 | DeepSeek-V2-Lite Q4_K_M: generation, short prompt | 215.6 tok/s | **245.6 tok/s** |
 | Largest context the engine accepts | 1,048,576 tokens | |
-| Rust source | 1,919,420 lines in 4,212 files, 340 crates | |
+| Rust source | 1,919,436 lines in 4,212 files, 340 crates | |
 | Tests | 16,361 test functions; about 4,200 are named for a refusal | |
 | Panel | 1,162 registered features, 58 guided tasks | |
 | GPU kernels | 137 shader and CUDA kernel sources written for this engine | |
