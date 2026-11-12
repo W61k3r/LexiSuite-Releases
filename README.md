@@ -18,8 +18,7 @@ this file are all from the current week.
 
 **Download:** the development USB image `1123d04` is on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite) and on the download page at
-[lexipanel.com/download](https://lexipanel.com/download/). It passed its virtual-machine qualification; it has not
-been booted on physical hardware yet. Earlier images are at
+[lexipanel.com/download](https://lexipanel.com/download/). It passed its virtual-machine qualification. Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
 guide is the [wiki](https://github.com/W61k3r/LexiSuite-Releases/wiki). Flash the image to a USB stick, boot it, and
 open the address shown on the screen.
