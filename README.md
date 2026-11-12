@@ -469,14 +469,23 @@ is proven on the hardware it is for unless the line says so.
 - **The Panel can run main on LexiEngine.** Main's engine is a setting like any instance's; status, logs, stop and
   restart follow the engine that is serving, and a process the Panel did not start on main's port is reported as
   such. Tested against fakes; not yet used on the owner's main.
-- **GeForce RTX 2060 under LexiKernel.** The driver crate gained the firmware-security step, the firmware start
-  (booter, protected-region metadata, page tables), the command and message queues, card memory, channels, the
-  interface the Vulkan driver uses, and an owner that composes the steps. On the physical card, read only, the
-  merged code now reads the whole video BIOS (five images, 512 KiB), finds the firmware-security image (version 2
-  descriptor), reads the GSP processor's configuration and builds the command that sets up the protected region.
-  The card corrected three assumptions the synthetic tests had passed: the vendor image signature's byte order, the
-  address space of the firmware table's pointers, and which areas of the interface table lie inside the loaded
-  image. Not yet: nothing has been written to the card; the firmware has not been run on it.
+- **GeForce RTX 2060 under LexiKernel: the card does its first work (11/12/2026).** With the physical card passed
+  through to LexiKernel in a virtual machine, LexiKernel's own driver now takes it from power-on to a finished job:
+  - it reads the video BIOS, runs the card's firmware-security image and the booter, and starts the GSP firmware,
+    which reports itself initialised after the host has carried out its 165-step register program;
+  - the firmware answers: "NVIDIA GeForce RTX 2060", TU106-A, 6 GiB; a client, device and subdevice are created;
+    the engine table lists ten engines (graphics, five copy engines, video decode and encode, SEC2, software);
+  - the instance-memory window works (a page written one way reads back the other way); a GPU address space is
+    created with page tables the host owns; a command channel is created on a copy engine, bound and scheduled;
+  - a copy-engine job submitted through that channel copies a 4 KiB page, and all 1,024 words read back equal.
+
+  The card corrected ten assumptions that the synthetic tests had passed, among them the vendor image signature's
+  byte order, the address space of the firmware table's pointers, the queue offsets in the firmware's argument
+  block, a reply decoder stricter than the firmware's replies, and the address of the channel doorbell. Each is
+  fixed with a test, and two recordings of the card are replayed write for write in the test set. This is
+  bring-up code: it runs only with a boot option, in builds that carry the vendor's firmware, which the release
+  image does not. Not yet: a graphics or compute context, a shader, or any model work on this card under
+  LexiKernel.
 - **Dynamically linked programs on LexiKernel:** interpreter loading, the auxiliary vector and position-independent
   executables in the ELF loader, with tests. Not yet run with a real dynamic program in the booted system.
 
@@ -776,7 +785,7 @@ A request larger than the context window gets an HTTP 400 stating the reason, an
 | `xhci`, `usb-class` | USB host and USB storage | ThinkPad P71, real hardware (11/03/2026) |
 | `nvme`, `ahci` | Storage | QEMU |
 | `amd-rdna3` and `amdgpu-*` | Radeon RX 7900 XTX | Physical card passed through to LexiKernel in QEMU (11/11/2026): firmware, power, hubs, scheduler firmware, compute queue, user address space, interrupt-delivered fences. No shader yet |
-| `nouveau-gsp` | GeForce RTX 2060 (TU106) | Physical card passed through (11/11/2026): read-only first contact only |
+| `nouveau-gsp` | GeForce RTX 2060 (TU106) | Physical card passed through to LexiKernel in QEMU (11/12/2026): firmware-security image, booter and GSP firmware run; resource-manager objects, engine table, instance-memory window, host-owned GPU address space, a command channel, and one copy-engine job that copies a page. Bring-up builds only. No graphics or compute context yet |
 
 The 2.5G RTL8125B driver runs on the chip's built-in microcode, and refuses other RTL8125 revisions.
 
@@ -847,7 +856,8 @@ closed, and the test suite spends as much effort on what must be refused as on w
 ### Last test runs
 
 On the code in this source (main `4a00694a`), 11/12/2026. The jobs ran on `4b6d0cdb`; the one commit after it
-changes the release notes only.
+changes the release notes only. The RTX 2060 work of 11/12 came after these runs; the CPU test set (LexiOS,
+LexiKernel, Panel, server) was run again on it with 0 failed.
 
 | Check | Result |
 |---|---|
