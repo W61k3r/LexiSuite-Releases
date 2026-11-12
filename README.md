@@ -13,9 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Download:** a newer image, `4b6d0cd` (11/12/2026), is built and has passed its virtual-machine qualification;
-it is published after hardware testing. Until then the newest development USB image, `795b4a9` (11/11/2026), is on Hugging Face at
-[huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite); earlier images are at
+**Download:** the newest development USB image, `1123d04` (11/12/2026), is on Hugging Face at
+[huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite) and on the download page at
+[lexipanel.com/download](https://lexipanel.com/download/). It passed its virtual-machine qualification; it has not
+been booted on physical hardware yet. Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
 guide is the [wiki](https://github.com/W61k3r/LexiSuite-Releases/wiki). Flash the image to a USB stick, boot it, and
 open the address shown on the screen.
@@ -857,7 +858,8 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 On the code in this source (main `4a00694a`), 11/12/2026. The jobs ran on `4b6d0cdb`; the one commit after it
 changes the release notes only. The RTX 2060 work of 11/12 came after these runs; the CPU test set (LexiOS,
-LexiKernel, Panel, server) was run again on it with 0 failed.
+LexiKernel, Panel, server) was run again on it with 0 failed. Image `1123d04` is built from that source
+(main `1123d04f`).
 
 | Check | Result |
 |---|---|
