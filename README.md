@@ -27,9 +27,9 @@ open the address shown on the screen.
 
 ![Language](https://img.shields.io/badge/language-Rust%202024-b7410e?style=flat-square)
 ![Rust](https://img.shields.io/badge/rust-1.100.0--beta.5-b7410e?style=flat-square)
-![Lines](https://img.shields.io/badge/Rust-1.90M%20lines-2b6cb0?style=flat-square)
+![Lines](https://img.shields.io/badge/Rust-1.92M%20lines-2b6cb0?style=flat-square)
 ![Crates](https://img.shields.io/badge/crates-340-2b6cb0?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-16%2C102-2b6cb0?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-16%2C357-2b6cb0?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-Vulkan%20%7C%20CUDA-2f855a?style=flat-square)
 ![Status](https://img.shields.io/badge/status-development-d69e2e?style=flat-square)
 ![License](https://img.shields.io/badge/license-free%20personal%20%7C%20%24100%2Fyr%20commercial-4a5568?style=flat-square)
@@ -79,7 +79,7 @@ What you get, concretely:
   against a reference engine, automatic parameter optimization, quantization to fit a card, LoRA training, typed
   decisions with probabilities, agents with per-tool permissions, users and API keys, backups, updates, a fleet view,
   virtual machines with GPU passthrough, a file manager and a terminal.
-- **Security that is tested, not asserted:** about 4,600 of the 16,352 tests exist to prove that something is refused.
+- **Security that is tested, not asserted:** about 4,200 of the 16,357 tests exist to prove that something is refused.
 
 ---
 
@@ -111,7 +111,7 @@ What follows from owning every layer:
   exact at a 240,000-token context, the allocator, the admission rule and the kernel interface were all in reach.
 - **One rule set.** The same permission function decides every page, form and guided-task step; the same fail-closed
   policy applies from the boot loader to an HTTP route.
-- **One language.** 1.90 million lines of Rust in 340 crates; `unsafe` is confined to drivers, hardware paths and
+- **One language.** 1.92 million lines of Rust in 340 crates; `unsafe` is confined to drivers, hardware paths and
   FFI boundaries.
 - **It can be reasoned about by one person, or one AI.** The whole system is in one repository with one build.
 
@@ -145,8 +145,8 @@ against llama.cpp release b12230 (Vulkan, flash attention) with identical settin
 | DeepSeek-V2-Lite Q4_K_M: generation at 14,000 tokens of context | **159.0 tok/s** | 110.1 tok/s |
 | DeepSeek-V2-Lite Q4_K_M: generation, short prompt | 215.6 tok/s | **245.6 tok/s** |
 | Largest context the engine accepts | 1,048,576 tokens | |
-| Rust source | 1,916,998 lines in 4,211 files, 340 crates | |
-| Tests | 16,352 test functions; about 4,600 prove a refusal | |
+| Rust source | 1,918,907 lines in 4,211 files, 340 crates | |
+| Tests | 16,357 test functions; about 4,200 are named for a refusal | |
 | Panel | 1,162 registered features, 58 guided tasks | |
 | GPU kernels | 137 shader and CUDA kernel sources written for this engine | |
 
@@ -798,9 +798,9 @@ The ethos: **refuse what cannot be proven safe, and prove the refusals.** Every 
 closed, and the test suite spends as much effort on what must be refused as on what must work.
 
 **By the numbers (this source):**
-- 325 of 385 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 162 of 4,112 Rust files
+- 321 of 386 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 167 of 4,211 Rust files
   (drivers, the kernel's hardware paths, the VM host's system-call wrapper and FFI boundaries).
-- 15,536 test functions, of which about 4,600 are named for refusal, tamper, malformed-input, bounds or forgery cases.
+- 16,357 test functions, of which about 4,200 are named for refusal, tamper, malformed-input, bounds or forgery cases.
 
 **Boot and kernel**
 - Secure Boot chain signed with the LexiSuite development certificate; tampered kernels and rollback files are
@@ -856,10 +856,10 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On the code in this source (main `4a00694a`), 11/12/2026. The jobs ran on `4b6d0cdb`; the one commit after it
-changes the release notes only. The RTX 2060 work of 11/12 came after these runs; the CPU test set (LexiOS,
-LexiKernel, Panel, server) was run again on it with 0 failed. Image `1123d04` is built from that source
-(main `1123d04f`).
+On the code in this source (main `1123d04f`, the source of image `1123d04`), 11/12/2026. The LexiOS, LexiKernel,
+Panel and server rows were run on it (on `9a076293`; the two commits after that change wiki pages only). The
+LexiEngine rows and the Windows and Apple silicon compile checks were run on `4b6d0cdb`: the engine's code is
+byte-for-byte the same in both, and the Panel differs by one corrected test.
 
 | Check | Result |
 |---|---|
