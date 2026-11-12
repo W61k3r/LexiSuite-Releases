@@ -13,7 +13,8 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Download:** the newest development USB image, `795b4a9` (11/11/2026), is on Hugging Face at
+**Download:** a newer image, `4b6d0cd` (11/12/2026), is built and has passed its virtual-machine qualification;
+it is published after hardware testing. Until then the newest development USB image, `795b4a9` (11/11/2026), is on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite); earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
 guide is the [wiki](https://github.com/W61k3r/LexiSuite-Releases/wiki). Flash the image to a USB stick, boot it, and
@@ -25,9 +26,9 @@ open the address shown on the screen.
 
 ![Language](https://img.shields.io/badge/language-Rust%202024-b7410e?style=flat-square)
 ![Rust](https://img.shields.io/badge/rust-1.100.0--beta.5-b7410e?style=flat-square)
-![Lines](https://img.shields.io/badge/Rust-1.85M%20lines-2b6cb0?style=flat-square)
-![Crates](https://img.shields.io/badge/crates-339-2b6cb0?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-15%2C607-2b6cb0?style=flat-square)
+![Lines](https://img.shields.io/badge/Rust-1.90M%20lines-2b6cb0?style=flat-square)
+![Crates](https://img.shields.io/badge/crates-340-2b6cb0?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-16%2C102-2b6cb0?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-Vulkan%20%7C%20CUDA-2f855a?style=flat-square)
 ![Status](https://img.shields.io/badge/status-development-d69e2e?style=flat-square)
 ![License](https://img.shields.io/badge/license-free%20personal%20%7C%20%24100%2Fyr%20commercial-4a5568?style=flat-square)
@@ -57,7 +58,7 @@ LexiSuite is four products built to work as one system:
 | Component | What it is | Where |
 |---|---|---|
 | **LexiEngine** | Native Rust inference server: GGUF models on Vulkan, CUDA and CPU, with OpenAI-compatible and Anthropic Messages-compatible HTTP APIs | [`lexipanel-rs/engine`](lexipanel-rs/engine) |
-| **LexiPanel** | Authenticated browser control plane for models, instances, GPUs, storage, fleets, training and virtual machines: 1,158 features, 58 guided tasks | [`lexipanel-rs`](lexipanel-rs) |
+| **LexiPanel** | Authenticated browser control plane for models, instances, GPUs, storage, fleets, training and virtual machines: 1,162 features, 58 guided tasks | [`lexipanel-rs`](lexipanel-rs) |
 | **LexiOS** | Rust-first appliance OS that boots straight into the Panel (Linux 7.4-rc2 in the newest image): init, network, firewall, storage, setup, updates | [`lexios`](lexios) |
 | **LexiKernel** | Rust kernel with a Linux ABI, built around inference workloads; has booted real hardware and served the Panel from it | [`lexios/lexikernel`](lexios/lexikernel) |
 
@@ -77,7 +78,7 @@ What you get, concretely:
   against a reference engine, automatic parameter optimization, quantization to fit a card, LoRA training, typed
   decisions with probabilities, agents with per-tool permissions, users and API keys, backups, updates, a fleet view,
   virtual machines with GPU passthrough, a file manager and a terminal.
-- **Security that is tested, not asserted:** about 4,600 of the 15,607 tests exist to prove that something is refused.
+- **Security that is tested, not asserted:** about 4,600 of the 16,352 tests exist to prove that something is refused.
 
 ---
 
@@ -109,7 +110,7 @@ What follows from owning every layer:
   exact at a 240,000-token context, the allocator, the admission rule and the kernel interface were all in reach.
 - **One rule set.** The same permission function decides every page, form and guided-task step; the same fail-closed
   policy applies from the boot loader to an HTTP route.
-- **One language.** 1.85 million lines of Rust in 339 crates; `unsafe` is confined to drivers, hardware paths and
+- **One language.** 1.90 million lines of Rust in 340 crates; `unsafe` is confined to drivers, hardware paths and
   FFI boundaries.
 - **It can be reasoned about by one person, or one AI.** The whole system is in one repository with one build.
 
@@ -143,9 +144,9 @@ against llama.cpp release b12230 (Vulkan, flash attention) with identical settin
 | DeepSeek-V2-Lite Q4_K_M: generation at 14,000 tokens of context | **159.0 tok/s** | 110.1 tok/s |
 | DeepSeek-V2-Lite Q4_K_M: generation, short prompt | 215.6 tok/s | **245.6 tok/s** |
 | Largest context the engine accepts | 1,048,576 tokens | |
-| Rust source | 1,849,949 lines in 4,112 files, 339 crates | |
-| Tests | 15,607 test functions; about 4,600 prove a refusal | |
-| Panel | 1,158 registered features, 58 guided tasks | |
+| Rust source | 1,916,998 lines in 4,211 files, 340 crates | |
+| Tests | 16,352 test functions; about 4,600 prove a refusal | |
+| Panel | 1,162 registered features, 58 guided tasks | |
 | GPU kernels | 137 shader and CUDA kernel sources written for this engine | |
 
 Where llama.cpp is still ahead is in the table and in [Performance](#performance) on purpose: short prompts on small
@@ -180,7 +181,7 @@ One Panel, one interface: the classic Panel page, with tabs across the top (Stat
 Files, System, Help). Each tab opens a drop-down menu of its pages, and the open tab shows them as a row of sub-tabs.
 System holds the subsystem settings (network, firewall, storage and disks, users and access, updates, time,
 services, hardware, power, logs and diagnostics, backup, security, VM hosting, terminal). Every page opens inside the
-same frame. 1,158 features are recorded in one registry with their tooltips, and Help > Find a feature finds any of
+same frame. 1,162 features are recorded in one registry with their tooltips, and Help > Find a feature finds any of
 them by name. 58 guided tasks walk through multi-step jobs end to end (serve your first
 model, fit a model to this GPU, benchmark fairly against the newest reference build, back up and move the
 configuration, join a box and sync a model, boot an installer with GPU passthrough, import a TokenGate checkpoint and
@@ -437,6 +438,118 @@ Earlier results (11/04 to 11/07, older engine builds and llama.cpp b12090 to b12
 page. One of them still stands as a known gap: on Qwen3 1.7B, llama.cpp was 25-30% faster in generation.
 
 ---
+
+## Status, 11/12/2026
+
+New in this source since the evening of 11/11. Everything in this list is merged and passes its tests; none of it
+is proven on the hardware it is for unless the line says so.
+
+- **LexiEngine serves an agent application over the network.** The owner's main model (Qwen3.8 27B with its image
+  reader and draft head, 200,000-token context, one RX 7900 XTX) was moved from llama.cpp to LexiEngine and is used
+  by an agent application on another machine. What that needed is in this source:
+  - Thinking is returned apart from the answer (`reasoning_content`, also when streaming); `--reasoning-format none`
+    keeps the single text.
+  - A reasoning level in a request (`reasoning_effort`) is accepted for models whose chat template can think.
+  - Several model names: `--alias` may be repeated; any other name is still refused. There is no accept-anything mode.
+  - `--chat-template-file`, `--chat-template-kwargs`, and server-side sampling defaults (`--temp`, `--top-p`,
+    `--top-k`, `--min-p`, `--n-predict`).
+  - Tool schemas as agent applications write them (open objects, `default`, a nullable `anyOf`, `pattern`,
+    `format`, bounds, `$ref`): a tool that is not `strict` is served, with its schema widened to what the engine
+    can enforce; the model is shown the schema as written. `strict` tools are checked as before.
+  - Conversation history with earlier thinking on assistant turns and named tool results is accepted.
+  - `--queue-wait SECONDS`: a request waits for a busy slot instead of being answered 429 at once.
+  - TLS in the engine (`--tls-cert`, `--tls-key`, TLS 1.2 with extended master secret and TLS 1.3), or plain HTTP on
+    the network only with `--allow-cleartext-lan` and an API key, in which case every route needs the key.
+- **Faults found by that use, fixed with tests.** A request whose constraints left no possible token made the
+  engine refuse every later request until restart. Text with an apostrophe followed by a multi-byte character
+  crashed the tokenizer. A tool call made straight from the model's thinking was returned as thinking.
+- **The engine does not start a context it cannot serve.** The memory plan now includes the image reader, the draft
+  head and prompt working memory, is compared with the card's free memory at start, and a context that does not
+  fit is refused with the numbers and the largest context that fits.
+- **The Panel can run main on LexiEngine.** Main's engine is a setting like any instance's; status, logs, stop and
+  restart follow the engine that is serving, and a process the Panel did not start on main's port is reported as
+  such. Tested against fakes; not yet used on the owner's main.
+- **GeForce RTX 2060 under LexiKernel.** The driver crate gained the firmware-security step, the firmware start
+  (booter, protected-region metadata, page tables), the command and message queues, card memory, channels, the
+  interface the Vulkan driver uses, and an owner that composes the steps. On the physical card, read only, the
+  merged code now reads the whole video BIOS (five images, 512 KiB), finds the firmware-security image (version 2
+  descriptor), reads the GSP processor's configuration and builds the command that sets up the protected region.
+  The card corrected three assumptions the synthetic tests had passed: the vendor image signature's byte order, the
+  address space of the firmware table's pointers, and which areas of the interface table lie inside the loaded
+  image. Not yet: nothing has been written to the card; the firmware has not been run on it.
+- **Dynamically linked programs on LexiKernel:** interpreter loading, the auxiliary vector and position-independent
+  executables in the ELF loader, with tests. Not yet run with a real dynamic program in the booted system.
+
+- **No slowdown.** Before and after this merge on an idle RX 7900 XTX, same build settings, 32,768-token context:
+  DeepSeek-V2-Lite 203.3 to 202.3 tok/s (short prompt) and 161.2 to 161.7 (3,600 tokens, prompt 4,214 to 4,214
+  tok/s); Qwythos 9B 112.9 to 113.0 and 110.4 to 110.6 (prompt 2,626 to 2,624); Qwen3.8 27B 61.1 to 61.9 on a short
+  prompt, and at 3,600 tokens 69.5 to 66.0 in generation with overlapping ranges (60.7 to 71.8 before, 58.8 to 74.2
+  after, six runs each) and 878 to 873 tok/s in prompt processing. The first measurement of this merge showed the
+  27B's prompt processing at 673 tok/s: the new memory plan had cut the activation cache to one prompt batch. It
+  now reserves two when the context still fits, which is what the numbers above are from.
+- **Source read before release.** The whole change since 11/11 was read in order, network exposure and request
+  handling first. Nothing critical was found. Fixed before this release: the engine could size a larger context
+  than the rest of the server was configured with; an image reader was not charged when `serve` was left off the
+  command line; a tool call drafted inside a closed thought was returned as a call; a request waiting for a busy
+  slot kept waiting after its client had left; the TLS listener had no stall limit after the handshake; in
+  plain-HTTP network mode an unknown path answered 404 before the key was checked; a command-buffer address could
+  reach the privilege bit of its queue entry in the new RTX 2060 code. Open: switching main's engine in the Panel
+  starts main even if it was stopped, and main on LexiEngine is limited to one GPU; the new RTX 2060 driver code
+  still has unbounded waits and a per-page map that must be bounded before it is reachable from a program (it is
+  not reachable today).
+- **Found by the image's own boot test:** the Panel binary had grown to about 70 MB with this week's work and
+  LexiKernel's limit on an executable was 64 MiB, so LexiKernel came up without a Panel. The limit is now 128 MiB
+  and the image build fails if a binary exceeds it.
+
+## Status, 11/11/2026, evening
+
+New in this source since the morning of 11/11. Everything in this list is merged and passes its tests; none of it
+is proven on the hardware or the operating system it is for unless the line says so.
+
+- **One stick for every computer (image tools).** The image builder can add a FAT32 `LEXISUITE` partition that opens
+  on Windows, macOS and Linux, with a generated README, manifest and checksums, and the installer source the live
+  system needs to install itself to an internal disk. Dual-boot images are no longer capped at 16 GB. Not yet: an
+  image built this way has not been booted or installed from.
+- **Install LexiOS to an internal disk.** The Panel's guided install now runs through to the installer with a typed
+  disk serial; tested on loop files, not on a disk.
+- **Native installers.** A Linux installer (install for one user or all users, run from the stick, upgrade, roll
+  back, uninstall, check) with tests; macOS and Windows front ends are written and tested for their decisions on
+  Linux. The macOS one compiles for macOS; the Windows one does not compile for Windows yet. None has run on its
+  own operating system.
+- **A stick writer for Linux, macOS and Windows** (`lexisuite-flash`) with an original xz decoder that matches the
+  reference `xz` on every fixture. Linux writes are tested on loop files; the Windows backend refuses to write until
+  its device layer is finished.
+- **macOS and Windows ports.** A portable system layer and per-OS gating across the engine and the Panel. Compile
+  check today (no linking, nothing run): the engine and Panel workspaces compile with no errors for Apple silicon
+  and for 64-bit Windows. That is the compiler's answer only: no Windows or macOS binary has been linked, started
+  or tested, and features that exist only on Linux (the LexiOS appliance pages, virtual machines, firewall and
+  network management, the diagnostic bundle) are switched off there. Linux behaviour is unchanged (same tests,
+  same results).
+- **Ternary (1.6-bit) models, experimental and off unless chosen.** LexiEngine reads the `TQ1_P` weight type and the
+  per-layer side tensors that published ternary GGUF files use, with CPU kernels for all three ternary types and
+  Vulkan shaders that compile. LexiML has the first part of a memory-light ternary trainer (one layer on the CPU),
+  a converter and an exporter. Not yet: a real ternary model loaded and answering, the GPU kernels on a card,
+  whole-model training. The Panel marks all of it experimental.
+- **No slowdown for other models.** Before and after this merge on an idle RX 7900 XTX, same build settings, six
+  runs a cell: DeepSeek-V2-Lite 199.5 to 202.0 tok/s (short prompt) and 159.1 to 160.9 (3,600 tokens); Qwythos 9B
+  112.9 to 112.6 and 110.1 to 109.6; Qwen3.8 27B 73.3 to 72.9 at 3,600 tokens. The 27B short prompt measured 69.0
+  before and 67.7 after over nine greedy runs each, with overlapping ranges (64.7 to 71.6 and 61.5 to 69.8).
+- **DeepSeek decode:** three of five planned kernel fusions are in; they are worth about 1% on a short prompt.
+  llama.cpp is still ahead there.
+- **LexiKernel on every CPU.** `lk.user_cpus=all` (off by default) lets the threads of one process run on all CPUs,
+  with the kernel fixes that needed. Proven in QEMU with 4 and 8 CPUs under load; no speed-up is claimed.
+- **LexiKernel's AMD driver, next steps.** A compute-shader dispatch path with a hand-assembled test shader,
+  system-memory pages and host-visible buffers, and more of the render-node interface the Vulkan driver needs, all
+  tested against the recording of the real card. None of it has run on the card yet.
+- **Releases.** The Panel footer shows the build's commit and date beside the version. In-place update of a stick
+  or an installed system (stage, trial boot, keep or roll back) is tested on loop files.
+- **Translations.** The Panel's feature tooltips, feature names and guided-task text (3,193 strings) were English
+  in every language until today. They are now translated in all twenty other languages, and Hebrew is new as the
+  twenty-first language (right to left). A test fails the build if any language falls below 99.5%. The translations
+  are machine translation that passed mechanical checks (placeholders, product names and units kept) and have not
+  been read by native speakers; the Panel reports them as unreviewed.
+- **Main tests that failed are fixed.** Eleven Panel tests left over from a retired second interface now test the
+  classic interface, and the TokenGate command-line test checks all eleven tensors it writes.
 
 ## Status, 11/11/2026
 
@@ -733,25 +846,31 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On the code in this source (main `795b4a9d`), 11/11/2026, every job run on that exact commit:
+On the code in this source (main `4a00694a`), 11/12/2026. The jobs ran on `4b6d0cdb`; the one commit after it
+changes the release notes only.
 
 | Check | Result |
 |---|---|
 | Compile check, all four workspaces (engine, Panel, LexiOS, LexiKernel) | passed |
-| LexiEngine workspace tests, including the VM host crates | 4,002 passed, 0 failed |
-| LexiEngine server tests, CUDA and Vulkan | 534 passed, 0 failed |
-| TokenGate, scheduler, KV and prefix caches, server, Vulkan and CUDA kernel packages | 1,040 passed, 0 failed |
-| Panel library and support crates | 2,292 passed, 0 failed |
-| Panel integration targets | 72 passed, 0 failed |
+| LexiEngine workspace tests, including the VM host crates | 4,135 passed, 0 failed |
+| LexiEngine server tests, CUDA and Vulkan | 568 passed, 0 failed |
+| TokenGate, scheduler, KV and prefix caches, server, Vulkan and CUDA kernel packages | 1,074 passed, 0 failed |
+| Panel library and support crates | 2,346 passed, 0 failed |
+| Panel integration targets | 70 passed; the two tests that build 21 GB of files run on their own |
 | Panel tests that build 21 GB of files | both pass |
 | Host firewall test, five repeats | 5 of 5 passed |
-| LexiOS tools | 1,105 passed, 0 failed |
-| LexiOS appliance, storage, setup and network packages | 367 passed, 0 failed |
+| LexiOS tools (hardware qualification, init, live system, network bootstrap, setup, SSH, image tool) | 1,106 passed, 0 failed |
+| LexiOS appliance, storage, setup and network packages | 375 passed, 0 failed |
 | LexiOS package manager, compatibility qualification, trust tool and driver-domain relay | 54 passed, 0 failed |
-| LexiKernel, four suites (console, IOMMU, network, ACPI, xHCI, procfs, Linux ABI, kernel library, GPU drivers; some packages run in more than one) | 820, 877, 671 and 296 passed, 0 failed |
+| LexiOS live system package | 76 passed, 0 failed |
+| LexiKernel suites (console, IOMMU, network, ACPI, xHCI, procfs, Linux ABI, kernel library, GPU drivers; some packages run in more than one) | 834 and 892 passed, 0 failed |
+| Compile check for Apple silicon, engine and Panel workspaces (no linking, nothing run) | passed, 0 errors |
+| Compile check for 64-bit Windows, engine and Panel workspaces (no linking, nothing run) | passed, 0 errors |
 
-The engine's Vulkan tests run on the GPU: on this commit they ran on the RX 7900 XTX. With the XTX handed to a virtual
-machine they run on the Intel UHD 630, where one precision test misses its tolerance by 0.0000003.
+The engine's Vulkan tests run on the GPU: on this commit they ran on the RX 7900 XTX.
+
+Known, on this commit and earlier ones alike: the update tool's lock tests (`self25_*`, `u24_11_*`) fail
+intermittently when the whole suite runs in parallel and pass on their own.
 
 ### Proven
 
