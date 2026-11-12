@@ -13,12 +13,12 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `1123d04`, 11/12/2026.** The USB image, the source, this page, the wiki and
+**Current version: `3db31f8`, 11/12/2026.** The USB image, the source, this page, the wiki and
 [lexipanel.com](https://lexipanel.com/) all describe this one version.
 
-**Download:** the development USB image `1123d04` is on Hugging Face at
+**Download:** the development USB image `3db31f8` is on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite) and on the download page at
-[lexipanel.com/download](https://lexipanel.com/download/). It passed its virtual-machine qualification. Earlier images are at
+[lexipanel.com/download](https://lexipanel.com/download/). It passed its virtual-machine qualification and boots LexiKernel on a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
 guide is the [wiki](https://github.com/W61k3r/LexiSuite-Releases/wiki). Flash the image to a USB stick, boot it, and
 open the address shown on the screen.
@@ -81,7 +81,7 @@ What you get, concretely:
   against a reference engine, automatic parameter optimization, quantization to fit a card, LoRA training, typed
   decisions with probabilities, agents with per-tool permissions, users and API keys, backups, updates, a fleet view,
   virtual machines with GPU passthrough, a file manager and a terminal.
-- **Security that is tested, not asserted:** about 4,200 of the 16,357 tests exist to prove that something is refused.
+- **Security that is tested, not asserted:** about 4,200 of the 16,361 tests exist to prove that something is refused.
 
 ---
 
@@ -147,8 +147,8 @@ against llama.cpp release b12230 (Vulkan, flash attention) with identical settin
 | DeepSeek-V2-Lite Q4_K_M: generation at 14,000 tokens of context | **159.0 tok/s** | 110.1 tok/s |
 | DeepSeek-V2-Lite Q4_K_M: generation, short prompt | 215.6 tok/s | **245.6 tok/s** |
 | Largest context the engine accepts | 1,048,576 tokens | |
-| Rust source | 1,918,907 lines in 4,211 files, 340 crates | |
-| Tests | 16,357 test functions; about 4,200 are named for a refusal | |
+| Rust source | 1,919,420 lines in 4,212 files, 340 crates | |
+| Tests | 16,361 test functions; about 4,200 are named for a refusal | |
 | Panel | 1,162 registered features, 58 guided tasks | |
 | GPU kernels | 137 shader and CUDA kernel sources written for this engine | |
 
@@ -442,7 +442,37 @@ page. One of them still stands as a known gap: on Qwen3 1.7B, llama.cpp was 25-3
 
 ---
 
-## New in version `1123d04` (11/12/2026)
+## New in version `3db31f8` (11/12/2026)
+
+New since version `1123d04` of the same morning: LexiKernel was booted from the USB stick on a Ryzen desktop (MSI
+X570 Tomahawk, Ryzen 9 5900X, 24 CPUs, Realtek RTL8125B 2.5G, two NVMe drives), and what stopped or failed there
+was fixed, one boot at a time. Each item below was found on that machine.
+
+- **The 2.5G Realtek network card works on real silicon.** Firmware leaves memory decoding off on devices its own
+  drivers did not use, so the card's registers read as all ones and it was refused; mapping a device's registers
+  now turns decoding on. The chip overwrites a receive descriptor's buffer address when it completes a frame, so
+  receive stopped after the first 64 frames; the address is restored on every hand-back. A damaged, split or
+  oversized frame is dropped and counted instead of ending the interface. The card took its address over DHCP and
+  served the Panel to another machine.
+- **NVMe 1.2 and 1.3 drives are driven.** The driver refused anything older than 1.4; it uses nothing newer than
+  1.2. Internal drives stay read-only until approved.
+- **The keyboard works on the local console.** USB keyboards and mice are on by default (`lexios.usb_hid=0` turns
+  them off). Their reports are read without waiting, so an idle keyboard no longer holds the USB controller the
+  boot stick is on; they are read every 8 ms; Caps, Num and Scroll Lock light their LEDs. The console page reads
+  the typed line: `N`, `U` and `Y` answer on the screen, `R` and `P` ask for a typed confirmation (any letter
+  case) and then stop services the way the power button does. The other actions in the list are done from the
+  Panel under LexiKernel.
+- **A setup code a person can type.** The first-boot code is `Lp1-` and four groups of four (64 random bits)
+  instead of 64 digits, accepted in either case, with or without the prefix and dashes. Guessing is held off by
+  the per-address lockout.
+- **Ping is answered** on development media; every other inbound port except the Panel's stays closed.
+- **USB devices with an unusable endpoint** (the zero-size idle endpoints of Bluetooth and audio devices) keep
+  their other interfaces instead of being dropped whole.
+- **The stop page says why.** A disk or network card that was refused is named on the stop page with the reason,
+  and the kernel log reports when its network, supervision or USB loop runs late (`LK:LATENCY`).
+- **The setup page keeps its hardware-security report for 30 seconds** instead of gathering it on every load.
+
+## History: version `1123d04` (11/12/2026, morning)
 
 New in this source since the evening of 11/11. Everything in this list is merged and passes its tests; none of it
 is proven on the hardware it is for unless the line says so.
@@ -784,7 +814,7 @@ A request larger than the context window gets an HTTP 400 stating the reason, an
 | `intel-nic` | I225 (igc) | Written, not yet run |
 | `virtio` | virtio net and block | QEMU, both IOMMU types, load tested |
 | `usb-class` | USB Ethernet (CDC ECM, NCM) | QEMU `usb-net` on ECM. NCM not yet run |
-| `realtek-nic` | RTL8125B 2.5G, RTL8168/8169 | Emulated chip in unit tests only |
+| `realtek-nic` | RTL8125B 2.5G, RTL8168/8169 | RTL8125B on an MSI X570 board (11/12/2026): DHCP, Panel served to another machine. RTL8168/8169: emulated chip in unit tests only |
 | `xhci`, `usb-class` | USB host and USB storage | ThinkPad P71, real hardware (11/03/2026) |
 | `nvme`, `ahci` | Storage | QEMU |
 | `amd-rdna3` and `amdgpu-*` | Radeon RX 7900 XTX | Physical card passed through to LexiKernel in QEMU (11/11/2026): firmware, power, hubs, scheduler firmware, compute queue, user address space, interrupt-delivered fences. No shader yet |
@@ -800,9 +830,9 @@ The ethos: **refuse what cannot be proven safe, and prove the refusals.** Every 
 closed, and the test suite spends as much effort on what must be refused as on what must work.
 
 **By the numbers (this source):**
-- 321 of 386 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 167 of 4,211 Rust files
+- 321 of 386 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 167 of 4,212 Rust files
   (drivers, the kernel's hardware paths, the VM host's system-call wrapper and FFI boundaries).
-- 16,357 test functions, of which about 4,200 are named for refusal, tamper, malformed-input, bounds or forgery cases.
+- 16,361 test functions, of which about 4,200 are named for refusal, tamper, malformed-input, bounds or forgery cases.
 
 **Boot and kernel**
 - Secure Boot chain signed with the LexiSuite development certificate; tampered kernels and rollback files are
@@ -858,8 +888,9 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On version `1123d04`, 11/12/2026. The LexiEngine rows and the Windows and Apple silicon compile checks were run
-earlier the same day, before the last LexiKernel driver work; the engine's code has not changed since.
+On version `3db31f8`, 11/12/2026. The LexiEngine rows and the Windows and Apple silicon compile checks were run
+earlier the same day on version `1123d04`; the engine's code has not changed since. The source in the repository
+is this version plus one corrected test.
 
 | Check | Result |
 |---|---|
@@ -875,7 +906,7 @@ earlier the same day, before the last LexiKernel driver work; the engine's code 
 | LexiOS appliance, storage, setup and network packages | 375 passed, 0 failed |
 | LexiOS package manager, compatibility qualification, trust tool and driver-domain relay | 54 passed, 0 failed |
 | LexiOS live system package | 76 passed, 0 failed |
-| LexiKernel suites (console, IOMMU, network, ACPI, xHCI, procfs, Linux ABI, kernel library, GPU drivers; some packages run in more than one) | 834 and 892 passed, 0 failed |
+| LexiKernel suites (console, IOMMU, network, ACPI, xHCI, procfs, Linux ABI, kernel library, GPU drivers; some packages run in more than one) | 836 and 892 passed, 0 failed |
 | Compile check for Apple silicon, engine and Panel workspaces (no linking, nothing run) | passed, 0 errors |
 | Compile check for 64-bit Windows, engine and Panel workspaces (no linking, nothing run) | passed, 0 errors |
 
@@ -892,6 +923,9 @@ intermittently when the whole suite runs in parallel and pass on their own.
 - DeepSeek-V2-Lite ahead of llama.cpp from about 8,000 tokens of context.
 - **LexiKernel boots on real hardware.** A Lenovo ThinkPad P71 (i7-7700HQ) booted it from USB, got its address over
   DHCP, served the Panel to another machine and showed the local console.
+- **LexiKernel boots on a Ryzen desktop** (MSI X570, Ryzen 9 5900X, 24 CPUs, AMD IOMMU): both NVMe drives and the
+  RTL8125B 2.5G card bind, the card gets its address over DHCP and serves the Panel to another machine, it answers
+  ping, and the USB keyboard works on the local console.
 - One USB image boots LexiOS on Linux 7.4-rc1 and LexiKernel, with Secure Boot on (in a VM), and grows its data
   partition to fill a physical stick on first boot.
 - Upstream llama.cpp runs on LexiOS on original Rust runtime libraries.
@@ -901,10 +935,8 @@ intermittently when the whole suite runs in parallel and pass on their own.
 ### Not yet proven
 
 - Booting the Secure Boot image on a physical Secure Boot PC.
-- LexiKernel on real AMD hardware (proven in a VM with an AMD IOMMU).
 - GPU inference on LexiKernel on real hardware: it drives GPUs only through a Linux guest so far, and the native
   RDNA3 driver has not run on a card.
-- The RTL8125B driver on a real chip.
 - LexiKernel's CPU and storage readouts on real hardware (tested in VMs and suites).
 - VFIO device assignment in the Rust VM host with a real device.
 - A gated TokenGate model serving faster than the same model ungated.
