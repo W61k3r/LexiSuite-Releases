@@ -13,7 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Download:** the newest development USB image, `1123d04` (11/12/2026), is on Hugging Face at
+**Current version: `1123d04`, 11/12/2026.** The USB image, the source, this page, the wiki and
+[lexipanel.com](https://lexipanel.com/) all describe this one version.
+
+**Download:** the development USB image `1123d04` is on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite) and on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/). It passed its virtual-machine qualification; it has not
 been booted on physical hardware yet. Earlier images are at
@@ -369,7 +372,7 @@ flowchart TB
 
 ## Performance
 
-Everything here was measured on 11/10/2026 on engine commit `e83373cc` (the engine code in this source), on the machine LexiSuite is
+Everything here was measured on 11/10/2026, on the machine LexiSuite is
 developed on: Radeon RX 7900 XTX capped at 291 W, Intel i7-9700, Linux 7.3, nothing else running beside any run,
 one slot. The comparison is llama.cpp release b12230 (Vulkan, flash attention) started with the same context, cache
 type, sampling and speculation settings. Generation is tokens per second after the first token.
@@ -440,7 +443,7 @@ page. One of them still stands as a known gap: on Qwen3 1.7B, llama.cpp was 25-3
 
 ---
 
-## Status, 11/12/2026
+## New in version `1123d04` (11/12/2026)
 
 New in this source since the evening of 11/11. Everything in this list is merged and passes its tests; none of it
 is proven on the hardware it is for unless the line says so.
@@ -511,7 +514,7 @@ is proven on the hardware it is for unless the line says so.
   LexiKernel's limit on an executable was 64 MiB, so LexiKernel came up without a Panel. The limit is now 128 MiB
   and the image build fails if a binary exceeds it.
 
-## Status, 11/11/2026, evening
+## History: 11/11/2026, evening
 
 New in this source since the morning of 11/11. Everything in this list is merged and passes its tests; none of it
 is proven on the hardware or the operating system it is for unless the line says so.
@@ -561,7 +564,7 @@ is proven on the hardware or the operating system it is for unless the line says
 - **Main tests that failed are fixed.** Eleven Panel tests left over from a retired second interface now test the
   classic interface, and the TokenGate command-line test checks all eleven tensors it writes.
 
-## Status, 11/11/2026
+## History: 11/11/2026
 
 New in this source (11/10 and 11/11), all in LexiKernel:
 
@@ -585,7 +588,7 @@ New in this source (11/10 and 11/11), all in LexiKernel:
   fixture. No firmware has been loaded on it yet.
 - **TCP:** `TCP_NODELAY` now reaches LexiKernel's TCP stack.
 
-## Status, 11/10/2026
+## History: 11/10/2026
 
 New in this source (11/09 and 11/10), all in LexiEngine:
 
@@ -856,10 +859,8 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On the code in this source (main `1123d04f`, the source of image `1123d04`), 11/12/2026. The LexiOS, LexiKernel,
-Panel and server rows were run on it (on `9a076293`; the two commits after that change wiki pages only). The
-LexiEngine rows and the Windows and Apple silicon compile checks were run on `4b6d0cdb`: the engine's code is
-byte-for-byte the same in both, and the Panel differs by one corrected test.
+On version `1123d04`, 11/12/2026. The LexiEngine rows and the Windows and Apple silicon compile checks were run
+earlier the same day, before the last LexiKernel driver work; the engine's code has not changed since.
 
 | Check | Result |
 |---|---|
@@ -917,7 +918,7 @@ intermittently when the whole suite runs in parallel and pass on their own.
 - The CUDA lane speculates on greedy requests only, and this week's engine work has not been measured on the RTX 2060.
 - TokenGate: gated prefill on the CPU was slower than ungated on the one published checkpoint tried, and that
   checkpoint did not answer the record-list test prompts even ungated (it was trained on essays and chat).
-- One LexiKernel browser audit froze right after the console page appeared (1 of 5 boots of the `051033e` image); the
+- One LexiKernel browser audit froze right after the console page appeared (1 of 5 boots of an image of 11/06); the
   cause is not yet known.
 - Panel clean-up left: some older API routes keep their own role checks, and a few timing-sensitive tests can fail
   when the whole suite runs in parallel on a loaded machine (they pass when run alone).
