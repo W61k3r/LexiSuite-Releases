@@ -13,10 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `afaf544`, 11/13/2026.** The USB image, the source, this page, the wiki and
+**Current version: `14d173b`, 11/14/2026.** The USB image, the source, this page, the wiki and
 [lexipanel.com](https://lexipanel.com/) all describe this one version.
 
-**Download:** the development USB image `afaf544` is on the download page at
+**Download:** the development USB image `14d173b` is on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/) and on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite). It passed its virtual-machine qualification, and its LexiKernel is the one that boots a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
@@ -31,7 +31,7 @@ open the address shown on the screen.
 ![Rust](https://img.shields.io/badge/rust-1.100.0-b7410e?style=flat-square)
 ![Lines](https://img.shields.io/badge/Rust-1.93M%20lines-2b6cb0?style=flat-square)
 ![Crates](https://img.shields.io/badge/crates-340-2b6cb0?style=flat-square)
-![Tests](https://img.shields.io/badge/tests-16%2C357-2b6cb0?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-16%2C457-2b6cb0?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-Vulkan%20%7C%20CUDA-2f855a?style=flat-square)
 ![Status](https://img.shields.io/badge/status-development-d69e2e?style=flat-square)
 ![License](https://img.shields.io/badge/license-free%20personal%20%7C%20%24100%2Fyr%20commercial-4a5568?style=flat-square)
@@ -83,7 +83,7 @@ What you get, concretely:
   against a reference engine, automatic parameter optimization, quantization to fit a card, LoRA training, typed
   decisions with probabilities, agents with per-tool permissions, users and API keys, backups, updates, a fleet view,
   virtual machines with GPU passthrough, a file manager and a terminal.
-- **Security that is tested, not asserted:** about 4,200 of the 16,418 tests exist to prove that something is refused.
+- **Security that is tested, not asserted:** about 4,200 of the 16,457 tests exist to prove that something is refused.
 
 ---
 
@@ -133,9 +133,9 @@ Comparisons in one line each:
 
 ## The numbers
 
-All measured on 11/13/2026 on one Radeon RX 7900 XTX (24 GB, capped at 291 W) in an Intel i7-9700 desktop, nothing
-else running, on version `afaf544`, against llama.cpp 1.0.0 (build b12359, Vulkan, flash attention) with identical
-settings. Conditions are in [Performance](#performance).
+Measured on 11/13 and 11/14/2026 on one Radeon RX 7900 XTX (24 GB, capped at 291 W) in an Intel i7-9700 desktop,
+nothing else running, against llama.cpp 1.0.0 (build b12359, Vulkan, flash attention) with identical
+settings. The Qwen rows were measured on 11/13 on version `afaf544`, whose Qwen path is unchanged in `14d173b` (the first four rows of the 27B table, measured again on `14d173b`, came within 2%); the Gemma rows on 11/14 on `14d173b`. Conditions are in [Performance](#performance).
 
 | What | LexiEngine | llama.cpp 1.0.0 |
 |---|---|---|
@@ -153,15 +153,18 @@ settings. Conditions are in [Performance](#performance).
 | 9B Qwen-family model (Qwythos 9B Q4_K_M), 524,288-token context, 4-bit K/V cache: generation, short prompt | **126.1 tok/s** | 106.5 tok/s |
 | Same, generation after a 253,000-token prompt | **73.3 tok/s** | 50.9 tok/s |
 | Same, prompt processing, 253,000 tokens | **1,352 tok/s** | 622 tok/s |
+| Gemma 4 31B Q4_K_M, 210,176-token context, 4-bit K/V cache: prompt processing, 3,600 tokens | **817 tok/s** | 661 tok/s |
+| Same, prompt processing, 33,000 tokens | **548 tok/s** | 447 tok/s |
+| Gemma 4 E4B Q4_K_M, default settings: prompt processing, 556 tokens | **3,782 tok/s** | 3,370 tok/s |
 | Largest context the engine accepts | 1,048,576 tokens | |
-| Rust source | 1,925,014 lines in 4,235 files, 340 crates | |
-| Tests | 16,418 test functions; about 4,200 are named for a refusal | |
+| Rust source | 1,929,102 lines in 4,243 files, 340 crates | |
+| Tests | 16,457 test functions; about 4,200 are named for a refusal | |
 | Panel | 1,162 registered features, 58 guided tasks | |
-| GPU kernels | 147 shader and CUDA kernel sources written for this engine | |
+| GPU kernels | 152 shader and CUDA kernel sources written for this engine | |
 
-Where llama.cpp 1.0.0 is ahead is in [Performance](#performance) on purpose: Gemma 4, whose prompt processing on
-Vulkan it doubled in its 1.0.0 release, and the RTX 2060, most clearly in prompt processing. That is the current
-work.
+Where llama.cpp 1.0.0 is ahead is in [Performance](#performance) on purpose: generation on Gemma 4 31B (3% to 5%),
+deep prompts on that model, which this version does not finish, and the RTX 2060, most clearly in prompt
+processing. That is the current work.
 
 ### Summary for AI assistants and reviewers
 
@@ -379,8 +382,8 @@ flowchart TB
 
 ## Performance
 
-Everything here was measured on 11/13/2026 on the machine LexiSuite is developed on: Radeon RX 7900 XTX capped at
-291 W, Intel i7-9700, Linux 7.3, nothing else running beside any run, one slot, on version `afaf544`. The comparison is
+Everything here was measured on 11/13 and 11/14/2026 on the machine LexiSuite is developed on: Radeon RX 7900 XTX
+capped at 291 W, Intel i7-9700, Linux 7.3, nothing else running beside any run, one slot. The Qwen tables were measured on 11/13 on version `afaf544`; the Qwen path is unchanged since, and the first four rows of the 27B table measured again on `14d173b` gave 76.4 / 74.7 / 71.1 / 69.6 tok/s in generation and 312 / 455 / 909 / 821 tok/s in prompt processing. The Gemma tables were measured on 11/14 on version `14d173b`. The comparison is
 llama.cpp 1.0.0 (build b12359, released 11/13/2026; Vulkan on the RX 7900 XTX, CUDA on the RTX 2060), started with
 the same context, cache type, sampling and speculation settings. Generation is tokens per second after the first
 token.
@@ -412,7 +415,7 @@ GPU jobs for running too long) while reading the 133,561-token prompt, and it re
 
 The same table on the version published this morning (`5db82d6`): generation the same within 1%; prompt processing
 765 tok/s at 33,002 tokens, 489 at 133,561 and 335 at 261,896. The difference is the packed prompt attention kernel
-described under [New in version `afaf544`](#new-in-version-afaf544-11132026).
+described under [History: version `afaf544`](#history-version-afaf544-11132026-evening).
 
 ### An agentic coding session on the same configuration
 
@@ -436,20 +439,24 @@ tokens: the shape of a coding agent reading files and answering.
 | RX 7900 XTX, Qwythos 9B Q4_K_M | Generation | **124 / 117 / 114 tok/s** | 108 / 106 / 104 |
 | | Prompt processing, 580 / 3,619 tokens | **2,449 / 2,885 tok/s** | 1,701 / 2,719 |
 | | Peak video memory | 5.6 GB | 5.2 GB |
-| RX 7900 XTX, Gemma 4 E4B Q4_K_M | Generation | 135 / 129 / 125 tok/s | **138 / 132 / 130** |
-| | Prompt processing, 556 / 3,595 tokens | 1,812 / 2,300 tok/s | **3,370 / 5,923** |
-| | Peak video memory | 5.6 GB | 3.2 GB |
-| RTX 2060, Qwythos 9B Q4_K_M | Generation | 47.7 / 47.0 / 42.6 tok/s | **49.5 / 49.6 / 48.6** |
-| | Prompt processing, 580 / 3,619 tokens | 378 / 352 tok/s | **1,019 / 1,213** |
-| RTX 2060, Gemma 4 E4B Q4_K_M | Generation | 68.4 / 64.7 / 63.6 tok/s | **69.3 / 69.7 / 67.0** |
-| | Prompt processing, 556 / 3,595 tokens | 1,161 / 1,247 tok/s | **2,493 / 2,853** |
+| RX 7900 XTX, Gemma 4 E4B Q4_K_M | Generation | **139 / 134 / 131 tok/s** | 138 / 132 / 130 |
+| | Prompt processing, 556 / 3,595 tokens | **3,782** / 5,688 tok/s | 3,370 / **5,923** |
+| | Peak video memory | 5.4 GB | 3.2 GB |
+| RX 7900 XTX, Gemma 4 31B Q4_K_M | Generation | 35.4 / 34.7 / 33.7 tok/s | **37.2 / 36.2 / 34.8** |
+| | Prompt processing, 556 / 3,595 tokens | **561 / 684 tok/s** | 469 / 594 |
+| | Peak video memory | 21.1 GB | 19.7 GB |
+| RTX 2060, Qwythos 9B Q4_K_M | Generation | 47.4 / 46.7 / 42.1 tok/s | **49.5 / 49.6 / 48.6** |
+| | Prompt processing, 580 / 3,619 tokens | 373 / 345 tok/s | **1,019 / 1,213** |
+| RTX 2060, Gemma 4 E4B Q4_K_M | Generation | 67.9 / 64.1 / 63.0 tok/s | **69.3 / 69.7 / 67.0** |
+| | Prompt processing, 556 / 3,595 tokens | 1,161 / 1,241 tok/s | **2,493 / 2,853** |
 
 What this table says plainly: with default settings the engine leads llama.cpp 1.0.0 on the Qwen family on the
-RX 7900 XTX, by 10% to 15% in generation. llama.cpp 1.0.0 leads on Gemma 4, where its 1.0.0 release roughly doubled
-prompt processing on Vulkan, and on the RTX 2060, most clearly in prompt processing, where the engine went from
-245 / 233 to 378 / 352 tok/s on Qwythos in this version and is still about a third of llama.cpp's speed. Both are
-current work. Peak video memory on the default path came down in this version (Qwythos 7.4 to 5.6 GB, Gemma 4
-11.4 to 5.6 GB).
+RX 7900 XTX, by 10% to 15% in generation. On Gemma 4 E4B the two are now level in generation, and the engine reads
+a 556-token prompt 12% faster and a 3,595-token prompt 4% slower; in the previous version llama.cpp read both about
+twice as fast. On Gemma 4 31B the engine reads prompts 15% to 20% faster and generates 3% to 5% slower.
+llama.cpp 1.0.0 leads on the RTX 2060, most clearly in prompt processing, where the engine is at about a third of
+its speed; this version did not move the RTX 2060 numbers. Generation on Gemma 4 31B and the RTX 2060 are the
+current work.
 
 With the model's draft head on and a 4,096-token context on both servers (RX 7900 XTX), the 27B Q4_K_M generates at
 82.3 / 71.8 / 58.9 tok/s on LexiEngine against 67.7 / 60.9 / 60.5 on llama.cpp 1.0.0 (prompts of 62, 592 and 3,631
@@ -475,6 +482,32 @@ One request per row, greedy. LexiEngine is ahead at every depth and the lead gro
 short prompt, 44% at 253,000 tokens, where it also reads the prompt more than twice as fast (first token after
 3 min 7 s against 6 min 47 s).
 
+### Gemma 4 31B Q4_K_M at a long context, 4-bit K/V cache
+
+New in this version: Gemma 4 runs with the 4-bit K/V cache at contexts up to the model's 262,144 tokens. On a
+24 GB card the 31B's weights (18.7 GB) leave room for a window of about 205,000 tokens; the engine computes that
+limit from the card and refuses a larger one with the figure. Measured at a 210,176-token context, batch 2048/512,
+with llama.cpp 1.0.0 started the same way (all layers on the GPU, its faster placement at this context):
+
+| Prompt tokens | Generation, LexiEngine | Generation, llama.cpp 1.0.0 | Prompt processing, LexiEngine | Prompt processing, llama.cpp 1.0.0 |
+|---:|---:|---:|---:|---:|
+| 3,595 | 31 to 33 tok/s | **33.4 tok/s** | **817 tok/s** | 661 tok/s |
+| 32,966 | 29.0 tok/s | **29.8 tok/s** | **548 tok/s** | 447 tok/s |
+| 133,525 | no result in this version | 21.4 tok/s | | 178 tok/s |
+| 201,371 | no result in this version | 18.2 tok/s | | 127 tok/s |
+
+The engine reads prompts 23% faster at both measured depths and generates 1% to 8% slower (its generation varied
+by about 7% between runs). **Known fault in this version:** on the 31B a prompt beyond about 130,000 tokens is read
+to the end and then stops with an out-of-memory refusal on its last short pass, so the two deep rows have no engine
+result; the cause is found (the last passes asked for new buffer sizes while the driver's free-memory figure
+lagged) and the correction is in test for the next version. llama.cpp 1.0.0 answered both, after 12 min 32 s and
+26 min 30 s. At the full 262,144-token window neither engine fits the 31B in 24 GB: llama.cpp ran with part of
+its buffers in system memory, at 104 tok/s prompt and 15 tok/s generation.
+
+Gemma 4 E4B at its full 131,072-token context with the same cache: generation 125.8 tok/s after 3,595 tokens and
+108.4 after 32,966 (llama.cpp 1.0.0: 117.7 and 105.0); prompt processing 5,318 and 4,237 tok/s (llama.cpp 1.0.0:
+5,715 and 4,283).
+
 ### What was learned
 
 - At long context, generation speed is set by how many bytes of cache are read per token. The wins above come from
@@ -489,9 +522,41 @@ page. One of them still stands as a known gap: on Qwen3 1.7B, llama.cpp was 25-3
 
 ---
 
-## New in version `afaf544` (11/13/2026)
+## New in version `14d173b` (11/14/2026)
 
-New since version `5db82d6`, published the same morning: the evening's engine work, and every comparison moved to
+New since version `afaf544` of 11/13/2026: Gemma 4 work on the RX 7900 XTX, and the move of the whole project to
+Rust 1.100.0.
+
+- **Gemma 4 prompts are read about twice as fast.** Layers that reuse another layer's keys and values now run only
+  the rows that produce output, attention loads each key/value row once for all the query heads that share it, and
+  prompt passes are 512 rows instead of 128. Output is identical bit for bit (0 of 262,144 logits differ with every
+  combination of the three switched on and off). Gemma 4 E4B on the RX 7900 XTX: a 556-token prompt went from
+  1,812 to 3,782 tok/s and a 3,595-token prompt from 2,300 to 5,688 tok/s; llama.cpp 1.0.0 is at 3,370 and 5,923.
+- **A wrong result on Gemma 4 prompts longer than the sliding window is fixed.** The ring of local keys and values
+  was exactly one window long, so a prompt pass overwrote keys its own later rows still needed. The ring now holds
+  the window plus one pass. A device test feeds the same prompt in passes and one token at a time and compares:
+  it passes with the fix and fails without it, and the Vulkan path now gives the same text as the CUDA path.
+- **Gemma 4 31B is supported** on Vulkan (per-layer key/value head counts and widths). At default settings on the
+  RX 7900 XTX it reads prompts 15% to 20% faster than llama.cpp 1.0.0 and generates 3% to 5% slower.
+- **Gemma 4 at long contexts: a 4-bit K/V cache and contexts up to 262,144 tokens**
+  (`LEXI_VULKAN_KV_DTYPE=Q4_1`). The memory plan charges the cache once, counts the working memory of a prompt pass and
+  prints the largest context that fits the card. Prompt attention on this cache runs on the card's matrix cores.
+  The 31B at a 210,176-token context reads prompts 23% faster than llama.cpp 1.0.0; see
+  [Performance](#performance) for the table and for the deep-prompt fault that is still open.
+- **Gemma 4 generation uses half the cache bytes.** Keys and values were already rounded to 16 bits and are now
+  stored that way: identical output, half the reads, about 1.5 GB less video memory on the 31B, and the long
+  prompt that ran out of memory on the 31B in one session now runs. E4B generation went from 135 / 129 / 125 to
+  139 / 134 / 131 tok/s. A fused normalisation kernel (`LEXI_GEMMA4_NORM_CHAIN=1`, off by default because whole-model
+  logits differ at rounding level) takes the 31B from 35.5 / 34.6 / 33.7 to 38.9 / 37.9 / 36.8 tok/s.
+- **The Gemma tokenizer is 14 times faster on a long prompt** (77 ms to 5.5 ms for 10,800 characters), same tokens.
+- **RTX 2060:** the Q4_K prompt products have new integer tile schedules, each with a test that the output bytes
+  are unchanged. None is selected by default yet, so the RTX 2060 numbers are those of the previous version.
+- **Rust 1.100.0.** The pinned toolchain moved from 1.100.0-beta.5 to the 1.100.0 release; the gates and the image
+  build of this version ran on it.
+
+## History: version `afaf544` (11/13/2026, evening)
+
+New since version `5db82d6`, published the same morning: that evening's engine work, and every comparison moved to
 llama.cpp 1.0.0, which was released that day.
 
 - **Long prompts on the 4-bit cache are read up to 33% faster.** A new prompt attention kernel packs the query heads
@@ -813,9 +878,8 @@ vision, speech, image generation and native quantization tools.
 
 ### Requirements
 
-- Rust 1.100.0 (`rustup toolchain install 1.100.0`). The gate streams and the Windows and Apple silicon compile checks pass on
-  1.100.0 stable (11/12/2026); this version's gates ran on 1.100.0-beta.7, and the toolchain the installer records is
-  still 1.100.0-beta.5 until the next version moves it
+- Rust 1.100.0 (`rustup toolchain install 1.100.0`): the pinned toolchain, on which this version's gates ran and its
+  image was built
 - For the first build, network access so Cargo can fetch the locked dependencies (`cargo fetch --locked`)
 - A Vulkan driver for AMD or Intel GPUs, or the CUDA runtime for NVIDIA
 - `glslc` from the Vulkan SDK, for building the shaders
@@ -993,17 +1057,17 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On version `afaf544`, 11/13/2026, which is also the source in the repository. The Windows and Apple silicon compile
-checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of files on
-`5db82d6`; the changes since are in the engine.
+On version `14d173b`, 11/14/2026, which is also the source in the repository, with Rust 1.100.0. The Windows and Apple
+silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
+files on `5db82d6`; the changes since are in the engine and the toolchain pin.
 
 | Check | Result |
 |---|---|
 | Compile check, all four workspaces (engine, Panel, LexiOS, LexiKernel) | passed |
-| LexiEngine workspace tests, including the VM host crates | 4,155 passed, 0 failed |
+| LexiEngine workspace tests, including the VM host crates | 4,164 passed, 1 failed (a timing race inside one VM-memory test, not in the product: it passed on three reruns and is corrected in the next version) |
 | LexiEngine server tests, CUDA and Vulkan | 570 passed, 0 failed |
 | TokenGate, scheduler, KV and prefix caches, server, Vulkan and CUDA kernel packages | 1,087 passed, 0 failed |
-| CUDA kernel suite on the RTX 2060 (kernels compared on the card) | 163 passed, 0 failed |
+| CUDA kernel suite on the RTX 2060 (kernels compared on the card) | 185 passed, 0 failed |
 | Panel library and support crates | 2,346 passed, 0 failed |
 | Panel integration targets | 70 passed; the two tests that build 21 GB of files run on their own |
 | Panel tests that build 21 GB of files (11/13 morning, `5db82d6`) | both pass |
@@ -1052,9 +1116,10 @@ intermittently when the whole suite runs in parallel and pass on their own.
 ### Known gaps
 
 - LexiKernel runs all of a process's threads on one CPU, so CPU inference there is far slower than on Linux.
-- Gemma 4: llama.cpp 1.0.0 processes prompts about twice as fast on Vulkan and generates 2% to 4% faster (see
-  [Performance](#performance)). That is the current engine work.
-- RTX 2060: llama.cpp 1.0.0 generates 4% to 14% faster and processes prompts about three times as fast on a 9B model.
+- Gemma 4 31B: llama.cpp 1.0.0 generates 3% to 5% faster, and a prompt beyond about 130,000 tokens stops with an
+  out-of-memory refusal on its last pass (see [Performance](#performance)); the correction is in test. That is the
+  current engine work.
+- RTX 2060: llama.cpp 1.0.0 generates 4% to 15% faster and processes prompts about three times as fast on a 9B model.
 - Short prompts on small models: llama.cpp was 25-30% faster on Qwen3 1.7B when last measured (11/07).
 - The CUDA lane speculates on greedy requests only.
 - TokenGate: gated prefill on the CPU was slower than ungated on the one published checkpoint tried, and that
