@@ -517,8 +517,8 @@ Gemma 4 E4B at its full 131,072-token context with the same cache: generation 12
 - Memory admission has to be exact. A 240,128-token context fits a 24 GB card only if working memory is charged
   once; the engine has no fixed memory budget and sizes itself from the card.
 
-Earlier results (11/04 to 11/07, older engine builds and llama.cpp b12090 to b12180) are in the wiki's Benchmarks
-page. One of them still stands as a known gap: on Qwen3 1.7B, llama.cpp was 25-30% faster in generation.
+Earlier results (11/06 to 11/07, older engine builds and older llama.cpp releases) are in the wiki's Benchmarks
+page.
 
 ---
 
@@ -1120,7 +1120,6 @@ intermittently when the whole suite runs in parallel and pass on their own.
   out-of-memory refusal on its last pass (see [Performance](#performance)); the correction is in test. That is the
   current engine work.
 - RTX 2060: llama.cpp 1.0.0 generates 4% to 15% faster and processes prompts about three times as fast on a 9B model.
-- Short prompts on small models: llama.cpp was 25-30% faster on Qwen3 1.7B when last measured (11/07).
 - The CUDA lane speculates on greedy requests only.
 - TokenGate: gated prefill on the CPU was slower than ungated on the one published checkpoint tried, and that
   checkpoint did not answer the record-list test prompts even ungated (it was trained on essays and chat).
