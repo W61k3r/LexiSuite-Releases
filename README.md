@@ -28,8 +28,8 @@ open the address shown on the screen.
 ### OS / Kernel / Engine / Panel. All Rust.
 
 ![Language](https://img.shields.io/badge/language-Rust%202024-b7410e?style=flat-square)
-![Rust](https://img.shields.io/badge/rust-1.100.0--beta.5-b7410e?style=flat-square)
-![Lines](https://img.shields.io/badge/Rust-1.92M%20lines-2b6cb0?style=flat-square)
+![Rust](https://img.shields.io/badge/rust-1.100.0-b7410e?style=flat-square)
+![Lines](https://img.shields.io/badge/Rust-1.93M%20lines-2b6cb0?style=flat-square)
 ![Crates](https://img.shields.io/badge/crates-340-2b6cb0?style=flat-square)
 ![Tests](https://img.shields.io/badge/tests-16%2C357-2b6cb0?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-Vulkan%20%7C%20CUDA-2f855a?style=flat-square)
@@ -115,7 +115,7 @@ What follows from owning every layer:
   exact at a 240,000-token context, the allocator, the admission rule and the kernel interface were all in reach.
 - **One rule set.** The same permission function decides every page, form and guided-task step; the same fail-closed
   policy applies from the boot loader to an HTTP route.
-- **One language.** 1.92 million lines of Rust in 340 crates; `unsafe` is confined to drivers, hardware paths and
+- **One language.** 1.93 million lines of Rust in 340 crates; `unsafe` is confined to drivers, hardware paths and
   FFI boundaries.
 - **It can be reasoned about by one person, or one AI.** The whole system is in one repository with one build.
 
@@ -791,7 +791,9 @@ vision, speech, image generation and native quantization tools.
 
 ### Requirements
 
-- Rust 1.100.0-beta.5 (the pinned toolchain the tests and the installer use; `rustup toolchain install 1.100.0-beta.5`)
+- Rust 1.100.0 (`rustup toolchain install 1.100.0`). The gate streams and the Windows and Apple silicon compile checks pass on
+  1.100.0 stable (11/12/2026); this version's gates ran on 1.100.0-beta.7, and the toolchain the installer records is
+  still 1.100.0-beta.5 until the next version moves it
 - For the first build, network access so Cargo can fetch the locked dependencies (`cargo fetch --locked`)
 - A Vulkan driver for AMD or Intel GPUs, or the CUDA runtime for NVIDIA
 - `glslc` from the Vulkan SDK, for building the shaders
