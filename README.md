@@ -78,7 +78,7 @@ What you get, concretely:
   at a 262,144-token context generates 17% to 25% faster and reads prompts 26% to 37% faster up to 33,000 tokens,
   and it answers 134,000-token and 262,000-token prompts where llama.cpp 1.0.0 returns nothing (its Vulkan device was lost
   on the 134,000-token prompt). A 32-turn
-  agentic coding session on the same model finishes in 193 s against 305 s.
+  agentic coding session on the same model finishes in 197 s against 305 s.
 - **Everything else an AI box needs, in the same GUI:** model library and downloads, per-GPU instances, benchmarks
   against a reference engine, automatic parameter optimization, quantization to fit a card, LoRA training, typed
   decisions with probabilities, agents with per-tool permissions, users and API keys, backups, updates, a fleet view,
@@ -148,8 +148,8 @@ settings. The Qwen rows were measured on 11/13 on version `afaf544`, whose Qwen 
 | Same, prompt processing, 33,000 tokens | **832 tok/s** | 605 tok/s |
 | Same, prompt processing, 134,000 tokens | **604 tok/s** (3 min 41 s) | device lost |
 | Same, prompt processing, 262,000 tokens | **445 tok/s** (9 min 48 s) | no result |
-| Same model, 32-turn agentic coding session to 71,500 tokens of context: total time | **193 s** | 305 s |
-| Same session, time to first token at turn 32 | **3.9 s** | 7.8 s |
+| Same model, 32-turn agentic coding session to 71,500 tokens of context: total time | **197 s** | 305 s |
+| Same session, time to first token at turn 32 | **4.0 s** | 7.8 s |
 | 9B Qwen-family model (Qwythos 9B Q4_K_M), 524,288-token context, 4-bit K/V cache: generation, short prompt | **126.1 tok/s** | 106.5 tok/s |
 | Same, generation after a 253,000-token prompt | **73.3 tok/s** | 50.9 tok/s |
 | Same, prompt processing, 253,000 tokens | **1,352 tok/s** | 622 tok/s |
@@ -410,7 +410,7 @@ prompt and a 128-token answer, 262,024 of 262,144 tokens.
 
 llama.cpp 1.0.0 lost its Vulkan device (`vk::Queue::submit: ErrorDeviceLost`: the graphics driver stopped one of its
 GPU jobs for running too long) while reading the 133,561-token prompt, and it returned nothing for the
-261,896-token one. LexiEngine answered both. A request larger than the window
+261,896-token one. LexiEngine answered both. That is at this table's configuration; with a smaller batch (1024/256) llama.cpp 1.0.0 read the 133,561-token prompt at 319 tok/s and generated at 37.4 tok/s, and lost its device on the 253,291- and 261,896-token prompts as before. A request larger than the window
 (262,210 tokens) is refused with a plain error by both servers.
 
 The same table on the version published this morning (`5db82d6`): generation the same within 1%; prompt processing
@@ -424,10 +424,10 @@ tokens: the shape of a coding agent reading files and answering.
 
 | | LexiEngine | llama.cpp 1.0.0 |
 |---|---:|---:|
-| Whole session | **193 s** | 305 s |
+| Whole session | **197 s** | 305 s |
 | Time to first token, turn 1 | **2.5 s** | 3.3 s |
-| Time to first token, turn 32 | **3.9 s** | 7.8 s |
-| Generation at turn 32 | **57.6 tok/s** | 42.0 tok/s |
+| Time to first token, turn 32 | **4.0 s** | 7.8 s |
+| Generation at turn 32 | **57.2 tok/s** | 42.0 tok/s |
 
 ### Default settings, two models, both cards
 
