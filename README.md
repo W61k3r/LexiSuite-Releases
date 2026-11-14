@@ -143,15 +143,16 @@ settings. Conditions are in [Performance](#performance).
 | Same, generation after a 3,600-token prompt | **71.4 tok/s** | 57.0 tok/s |
 | Same, generation after a 33,000-token prompt | **70.0 tok/s** | 55.8 tok/s |
 | Same, generation after a 134,000-token prompt | **50.4 tok/s** | device lost, no result |
-| Same, generation after a 262,000-token prompt (the full window) | **39.9 tok/s** | no result |
+| Same, generation after a 262,000-token prompt (the full window) | **39.7 tok/s** | no result |
 | Same, prompt processing, 3,600 tokens | **916 tok/s** | 725 tok/s |
 | Same, prompt processing, 33,000 tokens | **832 tok/s** | 605 tok/s |
 | Same, prompt processing, 134,000 tokens | **604 tok/s** (3 min 41 s) | device lost |
-| Same, prompt processing, 262,000 tokens | **451 tok/s** (9 min 41 s) | no result |
+| Same, prompt processing, 262,000 tokens | **445 tok/s** (9 min 48 s) | no result |
 | Same model, 32-turn agentic coding session to 71,500 tokens of context: total time | **193 s** | 305 s |
 | Same session, time to first token at turn 32 | **3.9 s** | 7.8 s |
-| Qwythos 9B Q4_K_M, default settings: generation, short prompt | **123.5 tok/s** | 108.0 tok/s |
-| Same, prompt processing, 3,600 tokens | **2,885 tok/s** | 2,719 tok/s |
+| 9B Qwen-family model (Qwythos 9B Q4_K_M), 524,288-token context, 4-bit K/V cache: generation, short prompt | **126.1 tok/s** | 106.5 tok/s |
+| Same, generation after a 253,000-token prompt | **73.3 tok/s** | 50.9 tok/s |
+| Same, prompt processing, 253,000 tokens | **1,352 tok/s** | 622 tok/s |
 | Largest context the engine accepts | 1,048,576 tokens | |
 | Rust source | 1,925,014 lines in 4,235 files, 340 crates | |
 | Tests | 16,418 test functions; about 4,200 are named for a refusal | |
@@ -397,7 +398,8 @@ table before and after.
 | 3,631 | **71.4 tok/s** | 57.0 tok/s | **916 tok/s** | 725 tok/s |
 | 33,002 | **70.0 tok/s** | 55.8 tok/s | **832 tok/s** | 605 tok/s |
 | 133,561 | **50.4 tok/s** | device lost | **604 tok/s** | |
-| 261,896 | **39.9 tok/s** | no result | **451 tok/s** | |
+| 253,291 | **40.1 tok/s** | no result | **455 tok/s** | |
+| 261,896 | **39.7 tok/s** | no result | **445 tok/s** | |
 
 One request per row, greedy. The first token after 62 and 76 tokens came in 0.19 s and 0.18 s (llama.cpp 1.0.0:
 0.34 s and 0.40 s). Both servers held about 24 GB of video memory. The last row is the full window: a 261,896-token
@@ -449,9 +451,29 @@ prompt processing on Vulkan, and on the RTX 2060, most clearly in prompt process
 current work. Peak video memory on the default path came down in this version (Qwythos 7.4 to 5.6 GB, Gemma 4
 11.4 to 5.6 GB).
 
+With the model's draft head on and a 4,096-token context on both servers (RX 7900 XTX), the 27B Q4_K_M generates at
+82.3 / 71.8 / 58.9 tok/s on LexiEngine against 67.7 / 60.9 / 60.5 on llama.cpp 1.0.0 (prompts of 62, 592 and 3,631
+tokens), and the engine's text with the draft head on is identical to its text with it off.
+
 Speculation here is sampled, not only greedy: at a temperature above zero each drafted token is checked against a
 sample from the full model's distribution with the request's own random stream, which keeps the output distribution
 exactly that of plain sampling.
+
+### A 9B Qwen-family model (Qwythos 9B Q4_K_M) at a 524,288-token context, no speculation
+
+4-bit K/V cache, batch 2048/512, on both engines.
+
+| Prompt tokens | Generation, LexiEngine | Generation, llama.cpp 1.0.0 | Prompt processing, LexiEngine | Prompt processing, llama.cpp 1.0.0 |
+|---:|---:|---:|---:|---:|
+| 50 | **126.1 tok/s** | 106.5 tok/s | **500 tok/s** | 485 tok/s |
+| 3,619 | **122.9 tok/s** | 103.3 tok/s | **2,758 tok/s** | 2,719 tok/s |
+| 32,990 | **112.5 tok/s** | 93.0 tok/s | **2,519 tok/s** | 2,186 tok/s |
+| 133,549 | **89.5 tok/s** | 67.5 tok/s | **1,815 tok/s** | 1,053 tok/s |
+| 253,279 | **73.3 tok/s** | 50.9 tok/s | **1,352 tok/s** | 622 tok/s |
+
+One request per row, greedy. LexiEngine is ahead at every depth and the lead grows with depth: 18% in generation on a
+short prompt, 44% at 253,000 tokens, where it also reads the prompt more than twice as fast (first token after
+3 min 7 s against 6 min 47 s).
 
 ### What was learned
 
@@ -472,12 +494,12 @@ page. One of them still stands as a known gap: on Qwen3 1.7B, llama.cpp was 25-3
 New since version `5db82d6`, published the same morning: the evening's engine work, and every comparison moved to
 llama.cpp 1.0.0, which was released that day.
 
-- **Long prompts on the 4-bit cache are read up to 34% faster.** A new prompt attention kernel packs the query heads
+- **Long prompts on the 4-bit cache are read up to 33% faster.** A new prompt attention kernel packs the query heads
   that share a key/value head so that no GPU subgroup idles, stages each key/value tile 24 times instead of 32, and
   lays out its shared memory so that loads do not collide. The arithmetic per query and head is unchanged and the
   output is identical bit for bit on the device comparison. On the 27B at a 262,144-token context a 33,000-token
   prompt went from 765 to 832 tok/s, a 134,000-token prompt from 489 to 604 tok/s (first token after 3 min 41 s
-  instead of 4 min 33 s) and a 262,000-token prompt from 335 to 451 tok/s. `LEXI_VK_Q41_TILE=v1` restores
+  instead of 4 min 33 s) and a 262,000-token prompt from 335 to 445 tok/s. `LEXI_VK_Q41_TILE=v1` restores
   the previous kernel.
 - **A rare wrong result in the previous prompt kernel is fixed.** A key split shorter than one 32-key tile multiplied
   leftover shared memory by zero; a NaN left there turned the row into NaN.
@@ -1005,7 +1027,8 @@ intermittently when the whole suite runs in parallel and pass on their own.
 
 - Qwen3.8 27B on the 7900 XTX ahead of llama.cpp 1.0.0 at every measured depth of a 262,144-token context, and
   answering 134,000-token and 262,000-token prompts that llama.cpp 1.0.0 could not (see [Performance](#performance)).
-- A 9B model served at a 524,288-token context on the same 24 GB card (11/10/2026), and ahead of llama.cpp 1.0.0 in generation at default settings.
+- A 9B model served at a 524,288-token context on the same 24 GB card, ahead of llama.cpp 1.0.0 at every measured depth to
+  253,000 tokens.
 - **LexiKernel boots on real hardware.** A Lenovo ThinkPad P71 (i7-7700HQ) booted it from USB, got its address over
   DHCP, served the Panel to another machine and showed the local console.
 - **LexiKernel boots on a Ryzen desktop** (MSI X570, Ryzen 9 5900X, 24 CPUs, AMD IOMMU): both NVMe drives and the
