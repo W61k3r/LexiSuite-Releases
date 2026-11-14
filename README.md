@@ -517,9 +517,6 @@ Gemma 4 E4B at its full 131,072-token context with the same cache: generation 12
 - Memory admission has to be exact. A 240,128-token context fits a 24 GB card only if working memory is charged
   once; the engine has no fixed memory budget and sizes itself from the card.
 
-Earlier results (11/06 to 11/07, older engine builds and older llama.cpp releases) are in the wiki's Benchmarks
-page.
-
 ---
 
 ## New in version `14d173b` (11/14/2026)
@@ -585,8 +582,6 @@ llama.cpp 1.0.0, which was released that day.
 
 ## History: version `5db82d6` (11/13/2026, morning)
 
-Measured against llama.cpp b12318, the newest build before 1.0.0.
-
 - **Long prompts are read 14% to 37% faster.** On every prompt pass the engine rebuilt the lists of row indices its
   gathers use and found the stored copy by comparing the whole list, more than a million entries each time; on a 27B
   model that was 80% of the engine's processor time during a prompt, with the GPU idle for 30% of each pass. The
@@ -597,14 +592,14 @@ Measured against llama.cpp b12318, the newest build before 1.0.0.
   passes that share each read across the four or six query heads of a K/V head and keep every sum in the same
   order, so the bytes written are the same; the device test compares them. The kernel is 9 times faster at 4,096
   cached tokens (12.9 ms to 1.4 ms for a 128-token pass). With default settings a 3,600-token prompt on Qwythos 9B
-  went from 1,400 to 2,877 tok/s (llama.cpp b12318: 2,338) and on a 27B IQ4_XS model from 489 to 933 tok/s (llama.cpp: 892).
+  went from 1,400 to 2,877 tok/s and on a 27B IQ4_XS model from 489 to 933 tok/s.
 - **Prompt passes carry the full chunk when the card has room.** The memory plan reserves working memory for full
   256-token prompt passes when the configured context still fits with it, and falls back to the earlier plan when
   it does not.
 - **RTX 2060 prompt processing is about three times faster.** Q6_K products on integer tensor-core tiles, compact
   Q4_K tiles for full 64-token chunks, attention scores shared across the query heads of a K/V head, and gather
   bounds kept instead of read back from the card on every gather. Qwythos 9B went from 89 / 68 to 242 / 220 tok/s
-  with the same text; llama.cpp b12318 is at 1,007 / 1,199 on the same card. Each has a switch
+  with the same text. Each has a switch
   (`LEXI_CUDA_Q6_INT_TILE=0`, `LEXI_CUDA_Q4_TILE64=0`, `LEXI_CUDA_COALESCED_SCORES=0`, `LEXI_CUDA_INDEX_BOUNDS=0`).
 - **One fixed benchmark.** The performance table for the 27B is now one configuration, the one the model is served
   with, and every engine change is recorded in it before and after.
