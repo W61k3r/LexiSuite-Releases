@@ -13,10 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `ae24156`, 11/16/2026.** The USB image, the source, this page, the wiki and
+**Current version: `00e4654`, 11/17/2026.** The USB image, the source, this page, the wiki and
 [lexipanel.com](https://lexipanel.com/) all describe this one version.
 
-**Download:** the development USB image `ae24156` is on the download page at
+**Download:** the development USB image `00e4654` is on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/) and on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite). It passed its virtual-machine qualification, and its LexiKernel is the one that boots a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
@@ -83,6 +83,9 @@ What you get, concretely:
   against a reference engine, automatic parameter optimization, quantization to fit a card, LoRA training, typed
   decisions with probabilities, agents with per-tool permissions, users and API keys, backups, updates, a fleet view,
   virtual machines with GPU passthrough, a file manager and a terminal.
+- **Not only its own engine.** The Panel also runs and manages llama.cpp, vLLM, Camelid, audio.cpp,
+  stable-diffusion.cpp and ComfyUI, sets up Hermes agents and Open WebUI against them, and attaches to Ollama, LM Studio
+  and any OpenAI-compatible server ([details](#it-also-runs-the-engines-and-front-ends-you-already-use)).
 - **Security that is tested, not asserted:** about 4,200 of the 16,553 tests exist to prove that something is refused.
 
 ---
@@ -223,6 +226,25 @@ viewer is never offered an administrator's page.
 | Secure and administer | Access (users, roles, API keys), a sealed password vault, LexiGuard, appliance setup, licence and media, settings, appearance, release controls |
 
 The Panel also serves OpenAI-compatible and Anthropic Messages-compatible APIs, so existing clients work unchanged.
+
+### It also runs the engines and front ends you already use
+
+LexiEngine is the suite's own inference engine, but the Panel is not tied to it. From the same GUI it downloads,
+builds, starts, monitors, benchmarks and tunes other engines, one or several per GPU, next to LexiEngine:
+
+| What | How LexiPanel works with it |
+|---|---|
+| **llama.cpp** (`llama-server`) | Downloads or builds upstream releases, starts an instance per GPU, edits every server option with built-in help, benchmarks and auto-tunes it, and compares it with LexiEngine on your own model. LexiOS carries its own runtime libraries so upstream builds start unchanged. |
+| **vLLM** | Managed as an engine with its own instances, batching settings and benchmarks. |
+| **Camelid** | Managed as an engine: download, instances, benchmarks. |
+| **audio.cpp** | Speech and audio models as managed instances. |
+| **stable-diffusion.cpp and ComfyUI** | Image and video generation as managed instances. |
+| **Hermes agents** | A setup check per instance: context per conversation, chat template and tool-call support, with the exact settings Hermes needs. |
+| **Open WebUI and other chat front ends** | One gateway address and key for every running instance, a ready-made start command for Open WebUI, and import of Open WebUI conversations into the Panel's own chat. |
+| **Servers you already run** | Ollama, LM Studio, KoboldCpp, text-generation-webui, SGLang, Lemonade Server and any OpenAI-compatible server are detected and can be added as endpoints. |
+
+None of these is bundled in the USB image; the Panel fetches or connects to them when you ask. Each keeps its own
+licence.
 
 ### LexiEngine: inference
 
@@ -564,10 +586,40 @@ tokens of source code; a larger prompt is cut off at the connection.
 
 ---
 
-## New in version `ae24156` (11/16/2026)
+## New in version `00e4654` (11/17/2026)
+
+New since version `ae24156` of 11/16/2026: no third-party crate of the project's choosing is left in any shipped
+program, the notices in the image are generated from the image itself, and the image builds in 29 minutes.
+
+- **No registry crate in any shipped program.** The last third-party Rust crates the project depended on are replaced
+  by its own code: gzip (reader and writer, fuzzed with 3.6 million damaged streams), the Rust lexer of the unsafe
+  audit, the Win32 and macOS system declarations and the Objective-C layer of the Metal back end. `cargo tree` lists no
+  registry package for Linux, Windows or macOS in any workspace. The Metal back end compiles for both Apple targets
+  and has not been run on a Mac.
+- **The Rust standard library is built without its backtrace code.** Every Linux program in the image is linked
+  against a standard library compiled from the Rust 1.100.0 source with the backtrace feature off, so the crates it
+  would bundle for that (`addr2line`, `gimli`, `object`, `miniz_oxide`) are not in the programs. What remains from
+  outside the project in a Rust program is the standard library itself and `hashbrown`, its hash map; both are
+  credited in the image.
+- **Notices that describe the image they are in.** Earlier images carried a licence folder copied from a build of
+  10/30/2026: it listed crates the image no longer contained, did not credit the Rust standard library, and its
+  kernel source offer named Linux 7.3 with no contact while the image shipped 7.4-rc2. The image now writes its
+  notices from its own inputs at build time (the kernel build record, the toolchain, the source tree) and the build
+  fails if a program carries code that has no notice. The kernel source offer names v7.4-rc2 with its commit and
+  configuration hash; requests go to `source@lexipanel.com`. See [Third-party credits](https://github.com/W61k3r/LexiSuite-Releases/wiki/Third-Party-Credits).
+- **The Panel's WebAssembly GUI module is built from the current source.** Earlier images shipped a build of it from
+  10/29/2026.
+- **Faster builds, a request limit in the server.** The image chain takes 29 minutes (53 before): shader variants
+  compile side by side and the Panel compiles on all cores. The engine server bounds the size of a request body.
+- **Benchmarks.** The tables on this page were measured on version `ae24156` on 11/16/2026. The engine's inference code
+  is unchanged since; a spot check of this version's engine against that one on 11/17/2026 gave the same output and
+  the same speed (27B Qwen on the RX 7900 XTX: 76.4 against 76.7 tok/s generating, 69.6 against 69.9 after a
+  33,000-token prompt; Qwythos 9B on the RTX 2060: 47.6 against 47.6).
+
+## History: version `ae24156` (11/16/2026)
 
 New since version `92ff3f3` of 11/15/2026: Qwen3.8 Flash-Next prompt processing and generation, and fixes from a
-whole-source audit. Every benchmark table on this page was measured again on this version.
+whole-source audit. Every benchmark table on this page was measured on this version.
 
 - **Qwen3.8 Flash-Next: long prompts are read in chunks, and the first token comes sooner than on Strata.** The previous version processed a prompt one token at a time on this 94 GB mixture-of-experts model. Prompts now run block by block in chunks of up to 16,384 tokens: each block's routed experts are loaded once per chunk, the next block's experts are written into video memory while the card computes the current one, the chunk's memory is lent by the expert cache for the length of the prompt, and the expert picks are counted on the card. The recurrent blocks keep their state in registers and the dense projections use wider tiles. With a 16-bit cache the tokens equal token-by-token processing on the engine's checks. Through the server on one RX 7900 XTX at a 262,144-token context, the first token of a 15,998-token prompt comes after 39.3 s (Strata 0.2.13 on the same card and tokens: 65.4 s) and of a 255,999-token prompt after 11 min 52 s (Strata: 13 min 24 s). The table and the cases where Strata is ahead are in [Performance](#performance).
 - **Qwen3.8 Flash-Next: generation after a long prompt no longer stalls on the prompt's experts.** A long prompt left the routing scores so high that the expert caches kept the prompt's experts while the answer needed others, and most of each generated token was spent reading experts from the drive. The scores are now scaled down before generation, keeping their order, and the promotions that displace a cached expert follow the number of routes chosen. After a 255,999-token prompt generation went from 1.73 to 3.76 tok/s, with the same tokens.
@@ -1118,14 +1170,14 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On version `ae24156`, 11/16/2026, which is also the source in the repository, with Rust 1.100.0. The Windows and Apple
+On version `00e4654`, 11/17/2026, which is also the source in the repository, with Rust 1.100.0. The Windows and Apple
 silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
 files on `5db82d6`.
 
 | Check | Result |
 |---|---|
 | Compile check, all four workspaces (engine, Panel, LexiOS, LexiKernel) | passed |
-| LexiEngine workspace tests, including the VM host crates | 4,199 passed, 0 failed |
+| LexiEngine workspace tests, including the VM host crates | 4,214 passed, 0 failed |
 | LexiEngine server tests, CUDA and Vulkan | 570 passed, 0 failed |
 | TokenGate, scheduler, KV and prefix caches, server, Vulkan and CUDA kernel packages | 1,090 passed, 0 failed |
 | CUDA kernel suite on the RTX 2060 (kernels compared on the card) | 185 passed, 0 failed |
@@ -1209,9 +1261,9 @@ usage checks: commercial users are trusted to buy what they use. The source code
 
 Copyright (c) 2026 LexiPanel.
 
-Third-party components keep their own licences. See [`lexios/THIRD_PARTY_NOTICES.md`](lexios/THIRD_PARTY_NOTICES.md),
-[`lexipanel-rs/engine/THIRD_PARTY_NOTICES.md`](lexipanel-rs/engine/THIRD_PARTY_NOTICES.md) and the
-`third-party-licenses` directories. Linux 7.4-rc2, included in LexiOS images, is licensed under GPL-2.0.
+Third-party components keep their own licences and are credited in [Third-party credits](https://github.com/W61k3r/LexiSuite-Releases/wiki/Third-Party-Credits) and, inside every image, under
+`/usr/share/licenses`. Linux 7.4-rc2, included in LexiOS images, is licensed under GPL-2.0; its corresponding source is
+provided on request to `source@lexipanel.com`.
 
 <div align="center">
 
