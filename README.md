@@ -138,7 +138,7 @@ nothing else running, on version `ae24156`, against llama.cpp 1.0.0 (build b1235
 the same day with identical settings, and on Qwen3.8 Flash-Next against Strata 0.2.13. Conditions are in
 [Performance](#performance).
 
-| What | LexiEngine | llama.cpp 1.0.0 (Strata where named) |
+| What | LexiEngine | llama.cpp 1.0.0 |
 |---|---|---|
 | Qwen3.8 27B Q4_K_M, 262,144-token context, 4-bit K/V cache, draft-head speculation: generation, short prompt | **76.6 tok/s** | 64.1 tok/s |
 | Same, generation after a 3,600-token prompt | **71.3 tok/s** | 56.8 tok/s |
@@ -151,11 +151,6 @@ the same day with identical settings, and on Qwen3.8 Flash-Next against Strata 0
 | Same, prompt processing, 262,000 tokens | **447 tok/s** (9 min 46 s) | not run |
 | Same model, 32-turn agentic coding session to 71,500 tokens of context: total time | **197 s** | 310 s |
 | Same session, time to first token at turn 32 | **4.0 s** | 8.1 s |
-| Qwen3.8 Flash-Next (94 GB) on one 24 GB card, 262,144-token context: first token of a 15,998-token prompt | **39.3 s** | Strata: 65.4 s |
-| Qwen3.8 Flash-Next (94 GB) on one 24 GB card, 262,144-token context: first token of a 31,997-token prompt | **74.2 s** | Strata: 111.8 s |
-| Qwen3.8 Flash-Next (94 GB) on one 24 GB card, 262,144-token context: first token of a 63,988-token prompt | **151.2 s** | Strata: 215.4 s |
-| Qwen3.8 Flash-Next (94 GB) on one 24 GB card, 262,144-token context: first token of a 127,988-token prompt | **322.2 s** | Strata: 409.9 s |
-| Qwen3.8 Flash-Next (94 GB) on one 24 GB card, 262,144-token context: first token of a 255,999-token prompt | **711.7 s** | Strata: 804.1 s |
 | 9B Qwen-family model (Qwythos 9B Q4_K_M), 524,288-token context, 4-bit K/V cache: generation, short prompt | **126.2 tok/s** | 106.9 tok/s |
 | Same, generation after a 253,000-token prompt | **73.5 tok/s** | 50.8 tok/s |
 | Same, prompt processing, 253,000 tokens | **1,363 tok/s** | 624 tok/s |
@@ -166,6 +161,17 @@ the same day with identical settings, and on Qwen3.8 Flash-Next against Strata 0
 | Tests | 16,553 test functions; about 4,200 are named for a refusal | |
 | Panel | 1,162 registered features, 58 guided tasks | |
 | GPU kernels | 170 shader and CUDA kernel sources written for this engine | |
+
+Qwen3.8 Flash-Next (94 GB mixture of experts) on one 24 GB card at a 262,144-token context, time from the request to the
+first generated token, against Strata 0.2.13 and llama.cpp on the same card and prompts:
+
+| Prompt tokens | LexiEngine | Strata 0.2.13 | llama.cpp |
+|---:|---:|---:|---:|
+| 15,998 | **39.3 s** | 65.4 s | 18 min 06 s (prompt alone) |
+| 31,997 | **74.2 s** | 111.8 s | 37 min 15 s (prompt alone) |
+| 63,988 | **151.2 s** | 215.4 s | not run |
+| 127,988 | **322.2 s** | 409.9 s | not run |
+| 255,999 | **711.7 s** | 804.1 s | not run |
 
 Where another engine is ahead is in [Performance](#performance) on purpose: llama.cpp 1.0.0 on the RTX 2060, most
 clearly in prompt processing. One fault is open on Gemma 4 31B at its largest contexts (a later prompt can be
