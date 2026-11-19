@@ -13,10 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `00e4654`, 11/17/2026.** The USB image, the source, this page, the wiki and
+**Current version: `0a5222f`, 11/18/2026.** The USB image, the source, this page, the wiki and
 [lexipanel.com](https://lexipanel.com/) all describe this one version.
 
-**Download:** the development USB image `00e4654` is on the download page at
+**Download:** the development USB image `0a5222f` is on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/) and on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite). It passed its virtual-machine qualification, and its LexiKernel is the one that boots a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
@@ -62,7 +62,7 @@ LexiSuite is four products built to work as one system:
 |---|---|---|
 | **LexiEngine** | Native Rust inference server: GGUF models on Vulkan, CUDA and CPU, with OpenAI-compatible and Anthropic Messages-compatible HTTP APIs | [`lexipanel-rs/engine`](lexipanel-rs/engine) |
 | **LexiPanel** | Authenticated browser control plane for models, instances, GPUs, storage, fleets, training and virtual machines: 1,162 features, 58 guided tasks | [`lexipanel-rs`](lexipanel-rs) |
-| **LexiOS** | Rust-first appliance OS that boots straight into the Panel (Linux 7.4-rc2 in the newest image): init, network, firewall, storage, setup, updates | [`lexios`](lexios) |
+| **LexiOS** | Rust-first appliance OS that boots straight into the Panel (Linux 7.4-rc3 in the newest image): init, network, firewall, storage, setup, updates | [`lexios`](lexios) |
 | **LexiKernel** | Rust kernel with a Linux ABI, built around inference workloads; has booted real hardware and served the Panel from it | [`lexios/lexikernel`](lexios/lexikernel) |
 
 Who it is for: anyone who wants to run large language models on hardware they own (one desktop GPU up to a small
@@ -416,7 +416,7 @@ flowchart TB
 ## Performance
 
 Everything here was measured on 11/16/2026 on the machine LexiSuite is developed on: Radeon RX 7900 XTX capped at
-291 W, Intel i7-9700, host kernel Linux 7.3 (the image itself ships Linux 7.4-rc2), nothing else running beside any run, one slot, on version `ae24156`. The comparison
+291 W, Intel i7-9700, host kernel Linux 7.3 (the newest image ships Linux 7.4-rc3), nothing else running beside any run, one slot, on version `ae24156`. The comparison
 is llama.cpp 1.0.0 (build b12359; Vulkan on the RX 7900 XTX, CUDA on the RTX 2060), run the same day and started
 with the same context, cache type, sampling and speculation settings; Qwen3.8 Flash-Next is also measured against
 Strata 0.2.13. Generation is tokens per second after the first token.
@@ -586,6 +586,23 @@ tokens of source code; a larger prompt is cut off at the connection.
 
 ---
 
+## New in version `0a5222f` (11/18/2026)
+
+New since version `00e4654` of 11/17/2026:
+
+- **Security repairs from a whole-source audit and two reviews of it.** Among them: instance start, stop and restart
+  now check the per-user instance assignment on every path; secrets are masked in logs, support bundles and saved
+  settings by whole field, including credentials in URL queries and fragments; login admission and the password
+  cache; SSH strict key exchange; Wi-Fi handshake retries; DHCP renewal; virtual-machine settings.
+- **Linux 7.4-rc3** in the image's Linux entry (unmodified upstream tag, signature verified, 133 signed modules).
+- **A DFlash draft model for LexiEngine instances in the Panel**, and the engine's `--spec-draft-model` option.
+- **A first runtime for hybrid state-space models with expert layers** (the `nemotron_h_moe` architecture): the
+  trunk and the most-used experts on the card, the others computed on the processor. New and not yet benchmarked
+  in the tables below.
+
+The benchmark tables on this page were measured on version `ae24156` and have not been measured again on
+`0a5222f`.
+
 ## New in version `00e4654` (11/17/2026)
 
 New since version `ae24156` of 11/16/2026: no third-party crate of the project's choosing is left in any shipped
@@ -605,7 +622,7 @@ program, the notices in the image are generated from the image itself, and the i
   10/30/2026: it listed crates the image no longer contained, did not credit the Rust standard library, and its
   kernel source offer named Linux 7.3 with no contact while the image shipped 7.4-rc2. The image now writes its
   notices from its own inputs at build time (the kernel build record, the toolchain, the source tree) and the build
-  fails if a program carries code that has no notice. The kernel source offer names v7.4-rc2 with its commit and
+  fails if a program carries code that has no notice. The kernel source offer names the kernel tag (v7.4-rc3 in version `0a5222f`) with its commit and
   configuration hash; requests go to `source@lexipanel.com`. See [Third-party credits](https://github.com/W61k3r/LexiSuite-Releases/wiki/Third-Party-Credits).
 - **The Panel's WebAssembly GUI module is built from the current source.** Earlier images shipped a build of it from
   10/29/2026.
@@ -1170,7 +1187,7 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-On version `00e4654`, 11/17/2026, which is also the source in the repository, with Rust 1.100.0. The Windows and Apple
+The source in the repository is version `0a5222f`, 11/18/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,227 passed, 0 failed; server 571 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 380 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
 silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
 files on `5db82d6`.
 
@@ -1262,7 +1279,7 @@ usage checks: commercial users are trusted to buy what they use. The source code
 Copyright (c) 2026 LexiPanel.
 
 Third-party components keep their own licences and are credited in [Third-party credits](https://github.com/W61k3r/LexiSuite-Releases/wiki/Third-Party-Credits) and, inside every image, under
-`/usr/share/licenses`. Linux 7.4-rc2, included in LexiOS images, is licensed under GPL-2.0; its corresponding source is
+`/usr/share/licenses`. Linux 7.4-rc3, included in the newest LexiOS image (tag `v7.4-rc3`, unmodified), is licensed under GPL-2.0; its corresponding source is
 provided on request to `source@lexipanel.com`.
 
 <div align="center">
