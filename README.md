@@ -13,10 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `84c95dd`, 11/19/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
+**Current version: `a30bac8`, 11/20/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
 [lexipanel.com](https://lexipanel.com/) share the November 18–19 benchmark results.
 
-**Download:** the development USB image `84c95dd` is on the download page at
+**Download:** the development USB image `a30bac8` is on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/) and on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite). It passed its virtual-machine qualification, and its LexiKernel is the one that boots a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
@@ -539,6 +539,39 @@ Radeon RX 7900 XTX capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one sl
 
 llama.cpp b12531 leads on the E4B without a draft model. LexiEngine leads on the E4B with DFlash and on the 74B-A9B.
 
+### Maxwell-V1-Flash (35B mixture of experts) on one 24 GB card
+
+Maxwell-V1-Flash is a 35B mixture-of-experts model (45 layers, 256 experts per layer of which 12 run per token,
+four residual streams mixed by hyper-connections, block-sparse attention with a learned indexer, a 524,288-token
+context and a draft layer for speculative decoding). Version `a30bac8` is the first with a LexiEngine runtime for it,
+and with our own quantizer for it: the file measured here is 20.7 GB (experts IQ4_XS, the rest Q8_0, output head
+Q6_K, mixing matrices F32), written by `maxwell-quantize` from the published weights.
+
+Radeon RX 7900 XTX (24 GB) capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one slot, nothing else running,
+November 20, 2026. Each value is one run; generation is 256 tokens, greedy.
+
+| Prompt length (tokens) | Prompt processing (tok/s) | Generation (tok/s) | Generation with the model's draft layer (tok/s) | Drafts accepted |
+|---:|---:|---:|---:|---:|
+| 4,096 | 646.8 | 59.3 | 71.1 | 82% |
+| 16,384 | 460.9 | 58.0 | 67.7 | 72% |
+| 65,536 | 477.2 | 55.6 | 70.4 | 89% |
+
+- **The whole model is on the card** at these sizes: every expert of all 43 expert layers, the trunk and the caches.
+- **It runs the attention the model was trained with:** per group of heads, 8 prefix blocks, 8 local blocks and the
+  16 remote blocks its indexer picks, at every context length.
+- **Drafts never change the answer:** with the draft layer the generated tokens were identical to plain greedy
+  decoding at all three lengths, and a replay of 64 accepted and 64 rejected drafts at 16,384 tokens gave the same
+  logits bit for bit as single steps.
+- **Quality of the 4-bit file against the full-precision weights:** the same most likely next token at 88.95% of
+  16,384 positions of code and documentation (mean KL divergence 0.103), computed by our reference implementation
+  in F32. The engine's logits match that reference on the same file (KL 4.5e-6 at the end of a 2,048-token prompt).
+- **llama.cpp b12531 does not load this model** (`unknown model architecture`), so there is no llama.cpp column
+  here. A third-party llama.cpp port exists as a patch; by its own description it runs dense attention at every
+  position and drops the draft layer. It has not been measured on this card yet.
+- **Not measured yet:** contexts beyond 65,536 tokens. On this 24 GB card with 32 GB of system memory, a
+  262,144-token context is expected to fit with 8-bit cache rows and 524,288 is not (its cache needs 24.9 GB of
+  system memory).
+
 ### What was learned
 
 - At long context, generation speed is set by how many bytes of cache are read per token. The wins above come from
@@ -549,6 +582,20 @@ llama.cpp b12531 leads on the E4B without a draft model. LexiEngine leads on the
   once; the engine has no fixed memory budget and sizes itself from the card.
 
 ---
+
+## New in version `a30bac8` (11/20/2026)
+
+New since version `84c95dd` of 11/19/2026:
+
+- **Maxwell-V1-Flash runs on LexiEngine** (Vulkan): a new runtime for the `maxwell_moe` architecture with its
+  block-sparse attention, hyper-connections and draft layer, our own quantizer for it (`maxwell-quantize`, GPTQ per
+  matrix), a CPU reference implementation, and the model's tokenizer. On one RX 7900 XTX the 20.7 GB 4-bit file
+  generates at 56-59 tok/s and 68-71 tok/s with drafts, at up to 65,536 tokens of context (see Performance).
+- **Panel:** LexiEngine instances can be set to a context of up to 1,048,576 tokens (the limit was 262,144), and the
+  Panel starts Maxwell models on Vulkan. LexiEngine instances are listed as chat endpoints (comparison, gateway and
+  fleet views), and are asked for the model they serve.
+- **Engine:** reasoning is streamed live for tool and JSON requests; in the Gemma 4 runtime a draft model can no
+  longer change the answer; a faster exact Q6_K row kernel (the output head of large-vocabulary models).
 
 ## New in version `84c95dd` (11/19/2026)
 
@@ -971,6 +1018,7 @@ Architectures served per backend, as reported by `lexi-engine --accelerator-capa
 | Qwen3.5 / 3.8 hybrid | Yes | Yes | Yes |
 | Gemma 4 | Yes | Yes | Yes |
 | DeepSeek-V2 | Yes | Yes | Yes |
+| Maxwell (`maxwell_moe`) | No | Yes | No |
 
 Measured here: Q4_K_M, IQ4_XS, Q8_0 and F16. Speculative decoding uses
 the draft head embedded in MTP models. Also in the tree, at earlier stages: embeddings and reranking,
@@ -1161,7 +1209,7 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-The source in the repository is version `84c95dd`, 11/19/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,230 passed, 0 failed; server 579 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
+The source in the repository is version `a30bac8`, 11/20/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,248 passed, 0 failed; server 581 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
 silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
 files on `5db82d6`.
 
