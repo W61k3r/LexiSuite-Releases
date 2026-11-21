@@ -13,10 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `a30bac8`, 11/20/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
+**Current version: `e2184ab`, 11/21/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
 [lexipanel.com](https://lexipanel.com/) share the November 18–19 benchmark results.
 
-**Download:** the development USB image `a30bac8` is on the download page at
+**Download:** the development USB image `e2184ab` is on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/) and on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite). It passed its virtual-machine qualification, and its LexiKernel is the one that boots a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
@@ -539,38 +539,83 @@ Radeon RX 7900 XTX capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one sl
 
 llama.cpp b12531 leads on the E4B without a draft model. LexiEngine leads on the E4B with DFlash and on the 74B-A9B.
 
+### Inkling-2-Mini (looped mixture of experts) at a 262,144-token context on one 24 GB card
+
+Inkling-2-Mini (Thinking Machines, Apache-2.0, released November 20, 2026) is a looped mixture-of-experts model:
+24 layers of which the middle 12 run three times with shared weights (48 layer applications), 128 experts per
+layer of which 8 run per token, 20 layers with a 1,024-token window and 4 that see the whole context, and a
+context of up to 1,048,576 tokens. Version `e2184ab` is the first with a LexiEngine runtime for it.
+
+Both engines run the same 17.6 GB file: the experts on the vendor's own 4-bit grid (bit-identical to the published
+checkpoint), the rest at 8 bits. Radeon RX 7900 XTX (24 GB), Intel i7-9700, host kernel Linux 7.3, 4-bit key/value
+caches in both engines (llama.cpp: `-ctk q4_0 -ctv q4_0`), one slot, all layers on the card. Each value is one run;
+generation is 64 tokens, greedy. LexiEngine: November 21, 2026, on this version, nothing else running. llama.cpp:
+build 12600 (commit `29b52d398`, the first with this model) with the patches described on the
+[runtime page](https://github.com/W61k3r/LexiSuite-Releases/wiki/LexiEngine-Inkling-2), `llama-bench -b 2048 -ub 512`,
+November 20, 2026, with a disk copy running beside it.
+
+| Prompt length (tokens) | LexiEngine prompt (tok/s) | LexiEngine generation (tok/s) | llama.cpp b12600 prompt (tok/s) | llama.cpp b12600 generation (tok/s) |
+|---:|---:|---:|---:|---:|
+| 4,096 | **1,676.4** | **39.9** | 425.1 | 25.4 |
+| 16,384 | **1,568.9** | **39.0** | 396.9 | 25.0 |
+| 261,632 | **791.0** (330.8 s) | **33.3** | did not finish | not reached |
+
+- **At a 262,144-token context the whole model is on the card** in LexiEngine: weights 17.62 GB, caches 2.60 GB,
+  scratch 0.58 GB, loaded in 12.9 s. A 261,632-token prompt is processed in 5.5 minutes and generation then runs
+  at 33.3 tok/s.
+- **llama.cpp at that context:** it loads (about 22.3-22.9 GB on the card plus 3.9-4.5 GB reported in system
+  memory), but did not finish the 261,632-token prompt in 55 minutes (`llama-bench`, which processes the prompt
+  twice), and did not finish a 129,374-token prompt in 45 minutes (`llama-cli`, one pass, `-c 131072`). No rate
+  exists for it beyond 16,384 tokens on this card.
+- **The stock llama.cpp conversion does not fit a 24 GB card:** its converter decodes the vendor's 4-bit experts and
+  re-quantizes them, which gives 27.8 GB at 8 bits. The file used here keeps the experts as published; llama.cpp
+  needs a loader fix to run it (without it the second and third loop passes run unscaled experts). Both patches
+  are on the runtime page.
+- **Accuracy against a reference implementation of the published weights** (F32, 510 positions of one text, 4-bit
+  caches): LexiEngine prompt path mean KL divergence 0.0034, same most likely token at 99.2% of positions;
+  LexiEngine token by token 0.0039, 98.2%; llama.cpp 0.0037, 98.8%. With unrounded caches LexiEngine matches the
+  reference computed from the same file exactly (KL 0.00000 over 1,024 positions).
+- **Not in this version:** the model's draft head and its image input; reuse of an earlier request's prompt (every
+  request processes its whole prompt); the split of the model's thinking from its answer (both arrive in the
+  answer text); the vendor's 4-bit inputs to the experts (LexiEngine uses more precise inputs there). Numerical
+  accuracy is verified against the reference at up to 1,024 positions; no retrieval test at 262,144 tokens has
+  been run yet.
+
 ### Maxwell-V1-Flash (35B mixture of experts) on one 24 GB card
 
 Maxwell-V1-Flash is a 35B mixture-of-experts model (45 layers, 256 experts per layer of which 12 run per token,
 four residual streams mixed by hyper-connections, block-sparse attention with a learned indexer, a 524,288-token
-context and a draft layer for speculative decoding). Version `a30bac8` is the first with a LexiEngine runtime for it,
-and with our own quantizer for it: the file measured here is 20.7 GB (experts IQ4_XS, the rest Q8_0, output head
-Q6_K, mixing matrices F32), written by `maxwell-quantize` from the published weights.
+context and a draft layer for speculative decoding). LexiEngine has had a runtime and its own quantizer for it since
+version `a30bac8`: the file measured here is 20.7 GB (experts IQ4_XS, the rest Q8_0, output head Q6_K, mixing
+matrices F32), written by `maxwell-quantize` from the published weights. Version `e2184ab` processes prompts about
+twice as fast as `a30bac8` (646.8, 460.9 and 477.2 tok/s at these three lengths) and keeps 4-bit key/value caches
+by default.
 
-Radeon RX 7900 XTX (24 GB) capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one slot, nothing else running,
-November 20, 2026. Each value is one run; generation is 256 tokens, greedy.
+Radeon RX 7900 XTX (24 GB) capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one slot, 4-bit caches, nothing
+else running, November 21, 2026, on this version. Each value is one run; generation is 256 tokens, greedy.
 
 | Prompt length (tokens) | Prompt processing (tok/s) | Generation (tok/s) | Generation with the model's draft layer (tok/s) | Drafts accepted |
 |---:|---:|---:|---:|---:|
-| 4,096 | 646.8 | 59.3 | 71.1 | 82% |
-| 16,384 | 460.9 | 58.0 | 67.7 | 72% |
-| 65,536 | 477.2 | 55.6 | 70.4 | 89% |
+| 4,096 | 1,381.9 | 62.4 | 76.2 | 89% |
+| 16,384 | 933.4 | 61.8 | 71.2 | 77% |
+| 65,536 | 772.4 | 58.9 | 70.5 | 88% |
 
 - **The whole model is on the card** at these sizes: every expert of all 43 expert layers, the trunk and the caches.
 - **It runs the attention the model was trained with:** per group of heads, 8 prefix blocks, 8 local blocks and the
   16 remote blocks its indexer picks, at every context length.
 - **Drafts never change the answer:** with the draft layer the generated tokens were identical to plain greedy
   decoding at all three lengths, and a replay of 64 accepted and 64 rejected drafts at 16,384 tokens gave the same
-  logits bit for bit as single steps.
+  logits as single steps at every position.
 - **Quality of the 4-bit file against the full-precision weights:** the same most likely next token at 88.95% of
   16,384 positions of code and documentation (mean KL divergence 0.103), computed by our reference implementation
-  in F32. The engine's logits match that reference on the same file (KL 4.5e-6 at the end of a 2,048-token prompt).
-- **llama.cpp b12531 does not load this model** (`unknown model architecture`), so there is no llama.cpp column
-  here. A third-party llama.cpp port exists as a patch; by its own description it runs dense attention at every
-  position and drops the draft layer. It has not been measured on this card yet.
-- **Not measured yet:** contexts beyond 65,536 tokens. On this 24 GB card with 32 GB of system memory, a
-  262,144-token context is expected to fit with 8-bit cache rows and 524,288 is not (its cache needs 24.9 GB of
-  system memory).
+  in F32 on November 20 (the file has not changed). The engine's logits match that reference on the same file
+  (KL 3.4e-5 at the end of a 2,048-token prompt with 4-bit caches).
+- **llama.cpp does not load this model** (`unknown model architecture`, builds 12531 and 12600). A third-party
+  llama.cpp port exists as a patch; by its own description it runs dense attention at every position and drops the
+  draft layer. Measured on this card on November 20, 2026 with 4-bit caches on the same weights, that port is
+  **ahead of LexiEngine without drafts**: prompts at 2,557 and 1,515 tok/s (4,096 and 16,384 tokens) and generation
+  at 78.6 and 71.1 tok/s.
+- **Not measured yet:** contexts beyond 65,536 tokens.
 
 ### What was learned
 
@@ -582,6 +627,19 @@ November 20, 2026. Each value is one run; generation is 256 tokens, greedy.
   once; the engine has no fixed memory budget and sizes itself from the card.
 
 ---
+
+## New in version `e2184ab` (11/21/2026)
+
+New since version `a30bac8` of 11/20/2026:
+
+- **Inkling-2-Mini runs on LexiEngine** (Vulkan), the day after its release: a runtime for the `inkling2_loop`
+  architecture (three loop passes with 48 caches, windowed and global attention, experts on the vendor's 4-bit
+  grid), a CPU reference implementation, the model's tokenizer splitting, and serving through `lexi-engine` at a
+  context of 262,144 tokens on one 24 GB card. On an RX 7900 XTX it processes a 261,632-token prompt at 791 tok/s
+  and then generates at 33 tok/s; llama.cpp b12600 did not finish that prompt in 55 minutes (see Performance).
+- **Maxwell-V1-Flash:** prompts about twice as fast (1,382 tok/s at 4,096 tokens, 772 at 65,536; they were 647 and
+  477), and 4-bit key/value caches by default.
+- **Engine:** chat templates that print `}}` inside a string literal now parse.
 
 ## New in version `a30bac8` (11/20/2026)
 
@@ -1019,6 +1077,7 @@ Architectures served per backend, as reported by `lexi-engine --accelerator-capa
 | Gemma 4 | Yes | Yes | Yes |
 | DeepSeek-V2 | Yes | Yes | Yes |
 | Maxwell (`maxwell_moe`) | No | Yes | No |
+| Inkling 2 (`inkling2_loop`) | No | Yes | No |
 
 Measured here: Q4_K_M, IQ4_XS, Q8_0 and F16. Speculative decoding uses
 the draft head embedded in MTP models. Also in the tree, at earlier stages: embeddings and reranking,
@@ -1209,7 +1268,7 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-The source in the repository is version `a30bac8`, 11/20/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,248 passed, 0 failed; server 581 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
+The source in the repository is version `e2184ab`, 11/21/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,259 passed, 0 failed; server 585 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
 silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
 files on `5db82d6`.
 
