@@ -13,10 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `e2184ab`, 11/21/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
+**Current version: `b753bf3`, 11/21/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
 [lexipanel.com](https://lexipanel.com/) share the November 18–19 benchmark results.
 
-**Download:** the development USB image `e2184ab` is on the download page at
+**Download:** the development USB image `b753bf3` is on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/) and on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite). It passed its virtual-machine qualification, and its LexiKernel is the one that boots a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
@@ -539,47 +539,65 @@ Radeon RX 7900 XTX capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one sl
 
 llama.cpp b12531 leads on the E4B without a draft model. LexiEngine leads on the E4B with DFlash and on the 74B-A9B.
 
-### Inkling-2-Mini (looped mixture of experts) at a 262,144-token context on one 24 GB card
+### Inkling-2-Mini (looped mixture of experts) at up to a 524,288-token context on one 24 GB card
 
 Inkling-2-Mini (Thinking Machines, Apache-2.0, released November 20, 2026) is a looped mixture-of-experts model:
 24 layers of which the middle 12 run three times with shared weights (48 layer applications), 128 experts per
 layer of which 8 run per token, 20 layers with a 1,024-token window and 4 that see the whole context, and a
-context of up to 1,048,576 tokens. Version `e2184ab` is the first with a LexiEngine runtime for it.
+context of up to 1,048,576 tokens. LexiEngine has had a runtime for it since version `e2184ab`; version `b753bf3`
+serves it at a context of 524,288 tokens on one 24 GB card and adds the model's draft head, prompt reuse between
+requests, the split of its reasoning from its answer, typed decisions and LoRA adapters.
 
 Both engines run the same 17.6 GB file: the experts on the vendor's own 4-bit grid (bit-identical to the published
 checkpoint), the rest at 8 bits. Radeon RX 7900 XTX (24 GB), Intel i7-9700, host kernel Linux 7.3, 4-bit key/value
-caches in both engines (llama.cpp: `-ctk q4_0 -ctv q4_0`), one slot, all layers on the card. Each value is one run;
-generation is 64 tokens, greedy. LexiEngine: November 21, 2026, on this version, nothing else running. llama.cpp:
-build 12600 (commit `29b52d398`, the first with this model) with the patches described on the
+caches in both engines (llama.cpp: `-ctk q4_0 -ctv q4_0`), one slot, all layers on the card. Each value is one run,
+greedy. LexiEngine: November 21, 2026, on this version's code, nothing else running. llama.cpp: build 12600 (commit
+`29b52d398`, the first with this model) with the patches printed on the
 [runtime page](https://github.com/W61k3r/LexiSuite-Releases/wiki/LexiEngine-Inkling-2), `llama-bench -b 2048 -ub 512`,
-November 20, 2026, with a disk copy running beside it.
+November 20, 2026, with a disk copy running beside it; it was not measured again for this version.
 
-| Prompt length (tokens) | LexiEngine prompt (tok/s) | LexiEngine generation (tok/s) | llama.cpp b12600 prompt (tok/s) | llama.cpp b12600 generation (tok/s) |
-|---:|---:|---:|---:|---:|
-| 4,096 | **1,676.4** | **39.9** | 425.1 | 25.4 |
-| 16,384 | **1,568.9** | **39.0** | 396.9 | 25.0 |
-| 261,632 | **791.0** (330.8 s) | **33.3** | did not finish | not reached |
+| Prompt length (tokens) | LexiEngine prompt (tok/s) | LexiEngine generation (tok/s) | LexiEngine generation with the model's draft head (tok/s) | llama.cpp b12600 prompt (tok/s) | llama.cpp b12600 generation (tok/s) |
+|---:|---:|---:|---:|---:|---:|
+| 4,096 | **2,244.5** | **52.4** | not measured | 425.1 | 25.4 |
+| 16,384 | **2,147.8** | **50.9** | not measured | 396.9 | 25.0 |
+| 261,632 (262,144 context) | **1,145.7** (228.4 s) | **40.2** | 41.8 | did not finish | not reached |
+| 523,264 (524,288 context) | **766.6** (682.6 s) | **33.7** | 32.1 | not run | not run |
 
-- **At a 262,144-token context the whole model is on the card** in LexiEngine: weights 17.62 GB, caches 2.60 GB,
-  scratch 0.58 GB, loaded in 12.9 s. A 261,632-token prompt is processed in 5.5 minutes and generation then runs
-  at 33.3 tok/s.
-- **llama.cpp at that context:** it loads (about 22.3-22.9 GB on the card plus 3.9-4.5 GB reported in system
-  memory), but did not finish the 261,632-token prompt in 55 minutes (`llama-bench`, which processes the prompt
-  twice), and did not finish a 129,374-token prompt in 45 minutes (`llama-cli`, one pass, `-c 131072`). No rate
-  exists for it beyond 16,384 tokens on this card.
+- **At a 524,288-token context the whole model is on the card:** weights 17.62 GB, caches 5.02 GB, scratch 0.58 GB
+  (23.7 of 25.75 GB in use), loaded in 13 s. A 523,264-token prompt is processed in 11.4 minutes and generation then
+  runs at 33.7 tok/s. Nothing is moved to system memory. A context of 1,048,576 tokens is refused on a 24 GB card
+  (its caches alone need 9.85 GB).
+- **It finds what it read:** ten facts planted at 1% to 99% of the prompt were all answered exactly, at 260,864 tokens
+  and at 523,264 tokens.
+- **Against version `e2184ab` at 262,144:** the prompt is 45% faster (791.0 to 1,145.7 tok/s) and generation 21%
+  faster (33.3 to 40.2 tok/s).
+- **The draft head never changes the answer:** with it the generated tokens were identical to plain greedy decoding
+  in every run. It helps most at short and medium depth (served at a 524,288-token context with a short prompt: 51.0
+  tok/s against 43.9); after half a million tokens it is slower than plain decoding (32.1 against 33.7), because its
+  own attention over the whole context costs more than it saves.
+- **llama.cpp at long context:** it loads at 262,144 (about 22.3-22.9 GB on the card plus 3.9-4.5 GB reported in
+  system memory), but did not finish the 261,632-token prompt in 55 minutes (`llama-bench`, which processes the
+  prompt twice), and did not finish a 129,374-token prompt in 45 minutes (`llama-cli`, one pass, `-c 131072`). No rate
+  exists for it beyond 16,384 tokens on this card, and it was not run at 524,288.
 - **The stock llama.cpp conversion does not fit a 24 GB card:** its converter decodes the vendor's 4-bit experts and
   re-quantizes them, which gives 27.8 GB at 8 bits. The file used here keeps the experts as published; llama.cpp
-  needs a loader fix to run it (without it the second and third loop passes run unscaled experts). Both patches
-  are on the runtime page.
+  needs a loader fix to run it. Both patches are on the runtime page.
 - **Accuracy against a reference implementation of the published weights** (F32, 510 positions of one text, 4-bit
-  caches): LexiEngine prompt path mean KL divergence 0.0034, same most likely token at 99.2% of positions;
-  LexiEngine token by token 0.0039, 98.2%; llama.cpp 0.0037, 98.8%. With unrounded caches LexiEngine matches the
-  reference computed from the same file exactly (KL 0.00000 over 1,024 positions).
-- **Not in this version:** the model's draft head and its image input; reuse of an earlier request's prompt (every
-  request processes its whole prompt); the split of the model's thinking from its answer (both arrive in the
-  answer text); the vendor's 4-bit inputs to the experts (LexiEngine uses more precise inputs there). Numerical
-  accuracy is verified against the reference at up to 1,024 positions; no retrieval test at 262,144 tokens has
-  been run yet.
+  caches): LexiEngine prompt path mean KL divergence 0.0038, token by token 0.0043, same most likely token at 98.6%
+  of positions; llama.cpp 0.0037, 98.8%. With unrounded caches LexiEngine matches the reference computed from the
+  same file exactly (KL 0.00000 over 1,024 positions). The 4-bit caches are the larger part of that difference: on
+  1,024 positions the reference scores 0.0050 with 4-bit cache rows and 0.0020 with 8-bit rows.
+- **Typed decisions and LoRA adapters:** the engine's decision API runs on this runtime (0.43 s a decision at a
+  262,144-token context; on held-out sets a calibrated readout answered 30 of 32 four-option questions and 15 of 16
+  yes/no questions about Rust statements, and stayed at chance on two-digit multiplication comparisons, which the
+  model cannot do in one step). A GGUF LoRA adapter on the attention projections loads with `--lora` and matches the
+  reference with the same adapter exactly; with one loaded, prompts are about 10% slower and generation unchanged.
+  No trained adapter is published.
+- **Not in this version:** image input; the draft head for sampled (non-greedy) requests; the draft head inside the
+  model file (it is read from the published checkpoint folder); the vendor's 4-bit inputs to the experts (LexiEngine
+  uses more precise inputs there; an 8-bit-input path exists, is about 1 ms a token faster and is off by default
+  because it does not reproduce the reference bit for bit). Numerical accuracy is verified against the reference at up
+  to 1,024 positions; beyond that the evidence is the retrieval results.
 
 ### Maxwell-V1-Flash (35B mixture of experts) on one 24 GB card
 
@@ -627,6 +645,20 @@ else running, November 21, 2026, on this version. Each value is one run; generat
   once; the engine has no fixed memory budget and sizes itself from the card.
 
 ---
+
+## New in version `b753bf3` (11/21/2026)
+
+New since version `e2184ab` of 11/21/2026:
+
+- **Inkling-2-Mini at a 524,288-token context on one 24 GB card:** a 523,264-token prompt at 767 tok/s, then 33.7
+  tok/s, with ten of ten planted facts retrieved. At 262,144 the prompt is 45% faster than in `e2184ab` (1,146
+  tok/s) and generation 21% faster (40.2 tok/s).
+- **Inkling's draft head**, with output identical to plain decoding; **prompt reuse** between requests (a follow-up
+  turn processes only its new tokens); **reasoning separated from the answer** in the chat API.
+- **Typed decisions and LoRA adapters on the Inkling runtime**, and Panel settings for the draft head, an adapter and
+  the decision timeout on an Inkling instance.
+- **Decisions:** an operation that outlives its timeout is cancelled cleanly, and a decision bank left locked by a
+  stopped server is taken over at the next start.
 
 ## New in version `e2184ab` (11/21/2026)
 
@@ -1268,7 +1300,7 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-The source in the repository is version `e2184ab`, 11/21/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,259 passed, 0 failed; server 585 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
+The source in the repository is version `b753bf3`, 11/21/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,264 passed, 0 failed; server 587 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
 silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
 files on `5db82d6`.
 
