@@ -558,8 +558,8 @@ November 20, 2026, with a disk copy running beside it; it was not measured again
 
 | Prompt length (tokens) | LexiEngine prompt (tok/s) | LexiEngine generation (tok/s) | LexiEngine generation with the model's draft head (tok/s) | llama.cpp b12600 prompt (tok/s) | llama.cpp b12600 generation (tok/s) |
 |---:|---:|---:|---:|---:|---:|
-| 4,096 | **2,244.5** | **52.4** | not measured | 425.1 | 25.4 |
-| 16,384 | **2,147.8** | **50.9** | not measured | 396.9 | 25.0 |
+| 4,096 | **2,244.5** | 52.4 | **81.7** | 425.1 | 25.4 |
+| 16,384 | **2,147.8** | 50.9 | **80.4** | 396.9 | 25.0 |
 | 261,632 (262,144 context) | **1,145.7** (228.4 s) | **40.2** | 41.8 | did not finish | not reached |
 | 523,264 (524,288 context) | **766.6** (682.6 s) | **33.7** | 32.1 | not run | not run |
 
@@ -571,10 +571,14 @@ November 20, 2026, with a disk copy running beside it; it was not measured again
   and at 523,264 tokens.
 - **Against version `e2184ab` at 262,144:** the prompt is 45% faster (791.0 to 1,145.7 tok/s) and generation 21%
   faster (33.3 to 40.2 tok/s).
-- **The draft head never changes the answer:** with it the generated tokens were identical to plain greedy decoding
-  in every run. It helps most at short and medium depth (served at a 524,288-token context with a short prompt: 51.0
-  tok/s against 43.9); after half a million tokens it is slower than plain decoding (32.1 against 33.7), because its
-  own attention over the whole context costs more than it saves.
+- **With the model's draft head: 81.7 tok/s after a 4,096-token prompt and 80.4 after 16,384** (256 generated
+  tokens, about 6 tokens per pass of the main model), against llama.cpp's 25. The draft head never changes the
+  answer: the generated tokens were identical to plain greedy decoding in every run. It is off until the instance is
+  pointed at the published checkpoint folder (the instance setting `INKLING_DRAFT` in the Panel; it is read from
+  `mtp.safetensors` there, not from the model file) and it applies to greedy requests. The gain shrinks with depth:
+  41.8 against 40.2 tok/s at 262,144, and after half a million tokens it is slower than plain decoding (32.1 against
+  33.7) because its own attention over the whole context costs more than it saves; served at a 524,288-token context
+  with a short prompt it gives 51.0 tok/s against 43.9.
 - **llama.cpp at long context:** it loads at 262,144 (about 22.3-22.9 GB on the card plus 3.9-4.5 GB reported in
   system memory), but did not finish the 261,632-token prompt in 55 minutes (`llama-bench`, which processes the
   prompt twice), and did not finish a 129,374-token prompt in 45 minutes (`llama-cli`, one pass, `-c 131072`). No rate
@@ -653,8 +657,9 @@ New since version `e2184ab` of 11/21/2026:
 - **Inkling-2-Mini at a 524,288-token context on one 24 GB card:** a 523,264-token prompt at 767 tok/s, then 33.7
   tok/s, with ten of ten planted facts retrieved. At 262,144 the prompt is 45% faster than in `e2184ab` (1,146
   tok/s) and generation 21% faster (40.2 tok/s).
-- **Inkling's draft head**, with output identical to plain decoding; **prompt reuse** between requests (a follow-up
-  turn processes only its new tokens); **reasoning separated from the answer** in the chat API.
+- **Inkling's draft head: about 80 tok/s** at short and medium context (81.7 after 4,096 tokens, 80.4 after
+  16,384), with output identical to plain decoding; **prompt reuse** between requests (a follow-up turn processes
+  only its new tokens); **reasoning separated from the answer** in the chat API.
 - **Typed decisions and LoRA adapters on the Inkling runtime**, and Panel settings for the draft head, an adapter and
   the decision timeout on an Inkling instance.
 - **Decisions:** an operation that outlives its timeout is cancelled cleanly, and a decision bank left locked by a
