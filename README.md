@@ -1286,9 +1286,9 @@ The ethos: **refuse what cannot be proven safe, and prove the refusals.** Every 
 closed, and the test suite spends as much effort on what must be refused as on what must work.
 
 **By the numbers (this source):**
-- 321 of 386 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 167 of 4,212 Rust files
+- 321 of 389 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 170 of 4,362 Rust files
   (drivers, the kernel's hardware paths, the VM host's system-call wrapper and FFI boundaries).
-- 16,361 test functions, of which about 4,200 are named for refusal, tamper, malformed-input, bounds or forgery cases.
+- 16,806 test functions, of which about 3,800 are named for refusal, tamper, malformed-input, bounds or forgery cases.
 
 **Boot and kernel**
 - Secure Boot chain signed with the LexiSuite development certificate; tampered kernels and rollback files are
