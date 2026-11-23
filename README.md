@@ -554,7 +554,7 @@ model's draft head from the model file and uses it by default, for greedy and fo
 
 Both engines run the same weights: the experts on the vendor's own 4-bit grid (bit-identical to the published
 checkpoint), the rest at 8 bits, 17.6 GB; LexiEngine's file also carries the model's draft head (0.64 GB more).
-Radeon RX 7900 XTX (24 GB), Intel i7-9700, host kernel Linux 7.3, 4-bit key/value caches in both engines (llama.cpp:
+Radeon RX 7900 XTX (24 GB) capped at 291 W, Intel i7-9700, host kernel Linux 7.3, 4-bit key/value caches in both engines (llama.cpp:
 `-ctk q4_0 -ctv q4_0`), one slot, all layers on the card. Each value is one run, greedy. LexiEngine: November 22,
 2026, on this version's code, nothing else running. llama.cpp: build 12600 (commit `29b52d398`, the first with this
 model) with the patches printed on the
@@ -639,7 +639,7 @@ twice as fast as `a30bac8` (646.8, 460.9 and 477.2 tok/s at these three lengths)
 by default.
 
 Radeon RX 7900 XTX (24 GB) capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one slot, 4-bit caches, nothing
-else running, November 21, 2026, on this version. Each value is one run; generation is 256 tokens, greedy.
+else running, November 21, 2026, on version `e2184ab`. Each value is one run; generation is 256 tokens, greedy.
 
 | Prompt length (tokens) | Prompt processing (tok/s) | Generation (tok/s) | Generation with the model's draft layer (tok/s) | Drafts accepted |
 |---:|---:|---:|---:|---:|
