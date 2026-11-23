@@ -13,10 +13,10 @@ against the newest llama.cpp release on every change (see [The numbers](#the-num
 It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
 this file are all from the current week.
 
-**Current version: `3a376f8`, 11/22/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
+**Current version: `cce75e0`, 11/23/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
 [lexipanel.com](https://lexipanel.com/) share the November 18–19 benchmark results and the Inkling-2-Mini results of November 22.
 
-**Download:** the development USB image `3a376f8` is on the download page at
+**Download:** the development USB image `cce75e0` is on the download page at
 [lexipanel.com/download](https://lexipanel.com/download/) and on Hugging Face at
 [huggingface.co/Wa1k3r/LexiSuite](https://huggingface.co/Wa1k3r/LexiSuite). It passed its virtual-machine qualification, and its LexiKernel is the one that boots a Ryzen desktop (MSI X570, Ryzen 9 5900X). Earlier images are at
 [github.com/W61k3r/LexiSuite-Releases/releases](https://github.com/W61k3r/LexiSuite-Releases/releases); the user
@@ -62,7 +62,7 @@ LexiSuite is four products built to work as one system:
 |---|---|---|
 | **LexiEngine** | Native Rust inference server: GGUF models on Vulkan, CUDA and CPU, with OpenAI-compatible and Anthropic Messages-compatible HTTP APIs | [`lexipanel-rs/engine`](lexipanel-rs/engine) |
 | **LexiPanel** | Authenticated browser control plane for models, instances, GPUs, storage, fleets, training and virtual machines: 1,162 features, 58 guided tasks | [`lexipanel-rs`](lexipanel-rs) |
-| **LexiOS** | Rust-first appliance OS that boots straight into the Panel (Linux 7.4-rc3 in the newest image): init, network, firewall, storage, setup, updates | [`lexios`](lexios) |
+| **LexiOS** | Rust-first appliance OS that boots straight into the Panel (Linux 7.4-rc4 in the newest image): init, network, firewall, storage, setup, updates | [`lexios`](lexios) |
 | **LexiKernel** | Rust kernel with a Linux ABI, built around inference workloads; has booted real hardware and served the Panel from it | [`lexios/lexikernel`](lexios/lexikernel) |
 
 Who it is for: anyone who wants to run large language models on hardware they own (one desktop GPU up to a small
@@ -161,12 +161,12 @@ The full tables and settings are in [Performance](#performance).
 | Nemotron 3.5 Bolt 74B-A9B Q4, repeated requests (code / story), generation (tok/s) | **18.74 / 19.97** | 13.96 / 10.63 |
 | Same, first requests after loading, model file not yet in memory (code / story / t1 / t2) | **2.22 / 4.52 / 9.2 / 12.98** | 1.59 / 1.94 / 4.64 / 6.30 |
 | Largest context the engine accepts | 1,048,576 tokens | |
-| Inkling-2-Mini (17.6 GB, 4-bit K/V cache), 11/22/2026, version `3a376f8`, against llama.cpp b12600 (11/20/2026): generation after a 16,384-token prompt | **65.2 tok/s** (109.5 with the model's draft head) | 25.0 tok/s |
+| Inkling-2-Mini (17.6 GB, 4-bit K/V cache), 11/23/2026, version `cce75e0`, against llama.cpp's newest build `1f8baae` the same day: generation after a 16,384-token prompt | **65.8 tok/s** (134.8 with the model's draft head) | 39.2 tok/s |
 | Same, prompt processing at 16,384 tokens | **2,328 tok/s** | 397 tok/s |
 | Same, a 261,632-token prompt | **1,178 tok/s**, then 49.7 tok/s (61.7 with the draft head) | did not finish in 55 minutes |
 | Same, a 523,264-token prompt at a 524,288-token context | 769 tok/s, then 40.3 tok/s (47.0 with the draft head) | not run |
-| Rust source | 1,985,296 lines in 4,362 files, 340 crates (version `3a376f8`) | |
-| Tests | 16,806 test functions; about 3,800 are named for a refusal or rejection (version `3a376f8`) | |
+| Rust source | 1,987,498 lines in 4,363 files, 340 crates (version `cce75e0`) | |
+| Tests | 16,826 test functions (version `cce75e0`); about 3,800 are named for a refusal or rejection (counted on `3a376f8`) | |
 | Panel | 1,162 registered features, 58 guided tasks | |
 | GPU kernels | 187 shader and CUDA kernel sources written for this engine | |
 
@@ -548,85 +548,86 @@ llama.cpp b12531 leads on the E4B without a draft model. LexiEngine leads on the
 Inkling-2-Mini (Thinking Machines, Apache-2.0, released November 20, 2026) is a looped mixture-of-experts model:
 24 layers of which the middle 12 run three times with shared weights (48 layer applications), 128 experts per
 layer of which 8 run per token, 20 layers with a 1,024-token window and 4 that see the whole context, and a
-context of up to 1,048,576 tokens. LexiEngine has had a runtime for it since version `e2184ab` and has served it at
-a context of 524,288 tokens on one 24 GB card since `b753bf3`. Version `3a376f8` makes generation faster, reads the
-model's draft head from the model file and uses it by default, for greedy and for sampled requests.
+context of up to 1,048,576 tokens. LexiEngine has had a runtime for it since version `e2184ab`, has served it at
+a context of 524,288 tokens on one 24 GB card since `b753bf3`, and reads the model's draft head from the model file
+since `3a376f8`. Version `cce75e0` makes generation with the draft head faster again.
 
 Both engines run the same weights: the experts on the vendor's own 4-bit grid (bit-identical to the published
 checkpoint), the rest at 8 bits, 17.6 GB; LexiEngine's file also carries the model's draft head (0.64 GB more).
-Radeon RX 7900 XTX (24 GB) capped at 291 W, Intel i7-9700, host kernel Linux 7.3, 4-bit key/value caches in both engines (llama.cpp:
-`-ctk q4_0 -ctv q4_0`), one slot, all layers on the card. Each value is one run, greedy. LexiEngine: November 22,
-2026, on this version's code, nothing else running. llama.cpp: build 12600 (commit `29b52d398`, the first with this
-model) with the patches printed on the
-[runtime page](https://github.com/W61k3r/LexiSuite-Releases/wiki/LexiEngine-Inkling-2), `llama-bench -b 2048 -ub 512`,
-November 20, 2026, with a disk copy running beside it; it was not measured again for this version.
+Radeon RX 7900 XTX (24 GB), Intel i7-9700, host kernel Linux 7.3, 4-bit key/value caches in both engines (llama.cpp:
+`-ctk q4_0 -ctv q4_0`), one slot, all layers on the card. Each value is one run, greedy, November 23, 2026, nothing
+else running. LexiEngine: this version's code. llama.cpp: its newest build that day (commit `1f8baae`) with the
+loader patch printed on the
+[runtime page](https://github.com/W61k3r/LexiSuite-Releases/wiki/LexiEngine-Inkling-2), `llama-bench -b 2048 -ub 512`.
 
-| Prompt length (tokens) | LexiEngine prompt (tok/s) | LexiEngine generation (tok/s) | LexiEngine generation with the model's draft head (tok/s) | llama.cpp b12600 prompt (tok/s) | llama.cpp b12600 generation (tok/s) |
+| Prompt length (tokens) | LexiEngine prompt (tok/s) | LexiEngine generation (tok/s) | LexiEngine generation with the model's draft head (tok/s) | llama.cpp `1f8baae` prompt (tok/s) | llama.cpp `1f8baae` generation (tok/s) |
 |---:|---:|---:|---:|---:|---:|
-| 4,096 | **2,450.7** | 66.2 | **110.7** | 425.1 | 25.4 |
-| 16,384 | **2,327.5** | 65.2 | **109.5** | 396.9 | 25.0 |
-| 261,632 (262,144 context) | **1,178.5** (222.0 s) | 49.7 | **61.7** | did not finish | not reached |
-| 523,264 (524,288 context) | **768.8** (680.6 s) | 40.3 | **47.0** | not run | not run |
+| 4,096 | **2,430.3** | **66.5** | **136.4** | 1,232.6 | 40.4 |
+| 16,384 | **2,331.6** | **65.8** | **134.8** | 1,049.2 | 39.2 |
+| 261,632 (262,144 context) | 1,192.9 (219.3 s) | 50.3 | 65.5 | not measured | not measured |
+| 523,264 (524,288 context) | 764.3 (684.7 s) | 40.4 | 48.9 | not measured | not measured |
 
-- **With the model's draft head: 110.7 tok/s after a 4,096-token prompt and 109.5 after 16,384**
-  (256 generated tokens), against llama.cpp's 25. The draft head never changes a greedy answer: the generated tokens
-  were identical to plain greedy decoding in every run. Since this version it is read from the model file (one file
-  is all the engine needs) and is on by default; requests with a temperature are drafted too. Served over the chat API at a
-  524,288-token context with a short prompt (completion tokens divided by the whole request time): 86.6
-  tok/s greedy against 54.2 with the draft head switched off, and 90.1 against
-  61.6 at temperature 0.7.
+- **With the model's draft head: 136.4 tok/s after a 4,096-token prompt and 134.8 after 16,384**
+  (256 generated tokens; 110.7 and 109.5 in `3a376f8`), against llama.cpp's 40.4 and 39.2. The
+  draft head never changes a greedy answer: the generated tokens were identical to plain greedy decoding in every
+  run. It is read from the model file and is on by default; requests with a temperature are drafted too. Serving
+  through the chat API was not measured again for this version.
+- **llama.cpp has become much faster on this model since November 20:** its build 12600 processed these prompts at
+  425 and 397 tok/s and generated at 25; the newest build does 1,232.6 and 1,049.2 and generates at
+  40.4 and 39.2. LexiEngine is ahead of it by 2.2 times on a 16,384-token
+  prompt, 1.7 times in plain generation and 3.4 times with the draft
+  head. llama.cpp was not run at 262,144 or 524,288 with this build (build 12600 did not finish a 261,632-token
+  prompt in 55 minutes).
 - **Two plain figures appear at each depth.** The generation column is a 64-token run after the prompt. The drafting
   runs measure plain decoding again over their own tokens (256 at 4,096 and 16,384, 128 beyond), and that is the
-  figure the draft head is compared with: 56.9 at 4,096, 56.1 at 16,384,
-  45.2 at 262,144 and 37.3 at 524,288.
+  figure the draft head is compared with: 57.5 at 4,096, 56.2 at 16,384,
+  45.5 at 262,144 and 37.3 at 524,288.
 - **How much the draft head gives depends on the text.** The model checks each proposed run of tokens and keeps the
-  part that matches; predictable text is accepted in longer runs:
+  part that matches; predictable text is accepted in longer runs (85.3, 101.7 and 128.3 tok/s in `3a376f8`):
 
 | Text generated after a 16,384-token prompt | With the draft head (tok/s) | Plain (tok/s) | Tokens accepted per pass of the main model |
 |---|---:|---:|---:|
-| English technical prose | 85.3 | 55.9 | 3.31 |
-| Rust source code | 101.7 | 55.8 | 5.06 |
-| JSON records | 128.3 | 55.4 | 7.00 |
+| English technical prose | 94.7 | 56.2 | 3.31 |
+| Rust source code | 121.3 | 56.1 | 5.06 |
+| JSON records | 159.0 | 56.2 | 7.00 |
 
-- **Plain generation is faster than in `b753bf3`:** 66.2 tok/s after 4,096 tokens (52.4 before),
-  65.2 after 16,384 (50.9), 49.7 at 262,144 (40.2) and 40.3 at 524,288 (33.7).
-- **The draft head now helps at every depth:** 61.7 tok/s at 262,144 against 45.2 plain in the
-  same run, and 47.0 against 37.3 at 524,288 (in `b753bf3` it was slower than plain decoding
-  after half a million tokens).
 - **At a 524,288-token context the whole model is on the card:** weights 17.62 GB, caches 5.02 GB, scratch 0.58 GB
-  (0.30 GB with the draft head loaded, when prompts are processed in passes of 1,024 tokens), and the draft head (2.01 GB). A 523,264-token prompt is processed in 11.3 minutes. Nothing is moved to
+  (0.30 GB with the draft head loaded, when prompts are processed in passes of 1,024 tokens), and the draft head (2.01 GB). A 523,264-token prompt is processed in 11.4 minutes. Nothing is moved to
   system memory. A context of 1,048,576 tokens is refused on a 24 GB card (its caches alone need 9.85 GB).
 - **It finds what it read:** ten facts planted at 1% to 99% of the prompt were all answered exactly, at 260,864 tokens
   (10 of 10) and at 523,264 tokens (10 of 10).
-- **llama.cpp at long context:** it loads at 262,144 (about 22.3-22.9 GB on the card plus 3.9-4.5 GB reported in
-  system memory), but did not finish the 261,632-token prompt in 55 minutes (`llama-bench`, which processes the
-  prompt twice), and did not finish a 129,374-token prompt in 45 minutes (`llama-cli`, one pass, `-c 131072`). No rate
-  exists for it beyond 16,384 tokens on this card, and it was not run at 524,288.
 - **The stock llama.cpp conversion does not fit a 24 GB card:** its converter decodes the vendor's 4-bit experts and
   re-quantizes them, which gives 27.8 GB at 8 bits. The file used here keeps the experts as published; llama.cpp
-  needs a loader fix to run it. Both patches are on the runtime page.
+  needs a loader fix to run it. The patch is on the runtime page.
 - **Accuracy against a reference implementation of the published weights** (F32, 510 positions of one text, 4-bit
-  caches; measured on `b753bf3`, not again for this version): LexiEngine prompt path mean KL divergence 0.0038, token by token 0.0037, same most likely token at 98.6%
-  of positions; llama.cpp 0.0037, 98.8%. On this version, with unrounded caches, LexiEngine matches the reference computed from the
+  caches, this version): LexiEngine token by token mean KL divergence 0.0037, in 16-token passes 0.0038, same most
+  likely token at 98.6% of positions. With unrounded caches LexiEngine matches the reference computed from the
   same file exactly (KL 0.00000 over 1,024 positions). The 4-bit caches are the larger part of that difference: on
   1,024 positions the reference scores 0.0050 with 4-bit cache rows and 0.0020 with 8-bit rows.
-- **A file made with the Panel's own tools is published:**
+- **The experts of layers 20 to 23 can be stored in 4 bits too** (new in this version): a file 2.0 GB smaller
+  (16.2 GB with the draft head) that generates at the same speed. Against the reference it scores 0.0039 with
+  unrounded caches and 0.0071 with 4-bit caches (the 8-bit-expert file: 0.0018 and 0.0050), so it is a file for
+  cards where those 2 GB decide whether a context fits; it is not published.
+- **Files made with the Panel's own tools:**
   [Inkling-2-Mini-8Q-RCO-GPTQ](https://huggingface.co/Wa1k3r/Inkling-2-Mini-8Q-RCO-GPTQ), 18.3 GB with the draft head
-  inside. Its attention matrices were fitted by Quant Forge (calibration, GPTQ fits, size search, build, held-out
-  evaluation), which runs on this model since this version. Against the reference it scores 0.0014 with unrounded
+  inside, its attention matrices fitted by Quant Forge. Against the reference it scores 0.0014 with unrounded
   caches (plain rounding: 0.0018) and 0.0055 with 4-bit caches (plain rounding: 0.0050): the fit is real and small,
-  and with 4-bit caches the plainly rounded file is marginally ahead. At 523,264 tokens it answered ten of ten
-  planted facts.
+  and with 4-bit caches the plainly rounded file is marginally ahead. Since this version Quant Forge scores its
+  result with 4-bit caches, the format the runtime keeps by default, and keeps a 4-bit expert fit only when it
+  lowers the held-out score. The plainly rounded file is published with this version's image as
+  [Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA](https://huggingface.co/Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA).
 - **Typed decisions and LoRA adapters:** the engine's decision API runs on this runtime (0.43 s a decision at a
   262,144-token context, measured on `b753bf3`). A GGUF LoRA adapter on the attention projections loads with `--lora`
-  and matches the reference with the same adapter exactly. New in this version: a trainer for such adapters on the
-  last layers (CPU), and a tool that merges an adapter into a model file (with an empty adapter the merged file is
-  byte-identical to the original). An adapter trained on source code for 40 steps improved held-out loss by 0.16%,
-  which is not a measurable benefit; no trained adapter is published.
+  and matches the reference with the same adapter exactly; a trainer for such adapters on the last layers (CPU) and
+  a tool that merges an adapter into a model file are included. New in this version: the trainer can learn from a
+  full-precision teacher's distributions. An adapter trained that way to recover the 4-bit-expert file's loss did
+  not improve held-out text measurably (KL 0.01124 with it, 0.01128 without, 4-bit caches); no trained adapter is
+  published.
 - **Not in this version:** image input (the model's vision tower is not implemented); the vendor's 4-bit inputs to
   the experts (LexiEngine uses more precise inputs there; an 8-bit-input path exists and is off by default because it
-  does not reproduce the reference bit for bit); Quant Forge formats below 8 bits for this model. Numerical accuracy
-  is verified against the reference at up to 1,024 positions; beyond that the evidence is the retrieval results.
+  does not reproduce the reference bit for bit); Quant Forge formats below 8 bits for this model's attention
+  matrices. Numerical accuracy is verified against the reference at up to 1,024 positions; beyond that the evidence
+  is the retrieval results.
 
 ### Maxwell-V1-Flash (35B mixture of experts) on one 24 GB card
 
@@ -674,6 +675,23 @@ else running, November 21, 2026, on version `e2184ab`. Each value is one run; ge
   once; the engine has no fixed memory budget and sizes itself from the card.
 
 ---
+
+## New in version `cce75e0` (11/23/2026)
+
+New since version `3a376f8` of 11/22/2026:
+
+- **Inkling-2-Mini generates faster with its draft head:** 134.8 tok/s after a 16,384-token prompt (109.5
+  before), 159.0 on JSON, 121.3 on source code and 94.7 on prose (128.3,
+  101.7 and 85.3). Plain generation is unchanged (65.8 tok/s).
+- **llama.cpp measured again with its newest build:** it has become much faster on this model
+  (39.2 tok/s at 16,384, 25.0 on November 20); LexiEngine stays ahead, by 1.7 times plain
+  and 3.4 times with the draft head.
+- **Inkling 2 experts of layers 20 to 23 in 4 bits:** the engine reads them, `merge-lora --experts-nvfp4` writes such
+  a file (2.0 GB smaller, same speed, slightly lower accuracy).
+- **Quant Forge repairs:** a stopped run can resume on the space it started with; a 4-bit expert fit is kept only
+  when it lowers the held-out score; the final score is taken with 4-bit caches.
+- **The image's Linux entry is 7.4-rc4.** An all-in-one image with Inkling-2-Mini inside is published on
+  [Hugging Face](https://huggingface.co/Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA).
 
 ## New in version `3a376f8` (11/22/2026)
 
@@ -1344,7 +1362,7 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-The source in the repository is version `3a376f8`, 11/22/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,271 passed, 0 failed; server 588 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
+The source in the repository is version `cce75e0`, 11/23/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,274 passed, 0 failed; server 588 passed, 0 failed; LexiKernel 841 passed, 0 failed; LexiOS 381 passed, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
 silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
 files on `5db82d6`.
 
@@ -1367,16 +1385,16 @@ files on `5db82d6`.
 | Compile check for Apple silicon, engine and Panel workspaces (no linking, nothing run; 11/12, `3db31f8`) | passed, 0 errors |
 | Compile check for 64-bit Windows, engine and Panel workspaces (no linking, nothing run; 11/12, `3db31f8`) | passed, 0 errors |
 
-The engine's Vulkan tests run on the GPU: in the gate of `3a376f8` they ran on the RX 7900 XTX. The device tests for
+The engine's Vulkan tests run on the GPU: in the gate of `cce75e0` they ran on the RX 7900 XTX. The device tests for
 Qwen3.8 Flash-Next need the 94 GB model file and are not part of this run; they were run on the card separately on
 11/16/2026 (whole-token comparison against the CPU reference, prompt chunks against token-by-token processing at 600
 and 2,400 tokens, prompt reuse through the server). One Panel usability test
-(`m11_build_thread_fields_and_quantizer_arguments`) failed in the combined Panel run of `3a376f8` (11/22/2026), as on earlier versions, and
+(`m11_build_thread_fields_and_quantizer_arguments`) failed in the combined Panel run of `cce75e0` (11/23/2026), as on earlier versions, and
 passes when run alone.
 
 In the full run of `00e4654` and earlier full runs, the update tool's lock tests (`self25_*`, `u24_11_*`) failed
 intermittently when the whole suite ran in parallel and passed on their own. They are not part of the per-version
-gate, so they were not run again on `3a376f8`.
+gate, so they were not run again on `cce75e0`.
 
 ### Proven
 
@@ -1384,15 +1402,15 @@ gate, so they were not run again on `3a376f8`.
   depth, up to the full 262,144-token window (39.6 against 26.9 tok/s; see [Performance](#performance)).
 - Qwythos 9B served at a 524,288-token context on the same 24 GB card, ahead of llama.cpp b12531 in generation
   at every measured depth through d240.
-- Inkling-2-Mini served at a 524,288-token context on the same card with the whole model on it: 769 tok/s on a
-  523,264-token prompt, 47.0 tok/s generating with the model's draft head, ten of ten planted facts retrieved
-  (11/22/2026, `3a376f8`; see [Performance](#performance)).
+- Inkling-2-Mini run at a 524,288-token context on the same card with the whole model on it: 764 tok/s on a
+  523,264-token prompt, 48.9 tok/s generating with the model's draft head, ten of ten planted facts retrieved
+  (11/23/2026, `cce75e0`; see [Performance](#performance)).
 - **LexiKernel boots on real hardware.** A Lenovo ThinkPad P71 (i7-7700HQ) booted it from USB, got its address over
   DHCP, served the Panel to another machine and showed the local console.
 - **LexiKernel boots on a Ryzen desktop** (MSI X570, Ryzen 9 5900X, 24 CPUs, AMD IOMMU): both NVMe drives and the
   RTL8125B 2.5G card bind, the card gets its address over DHCP and serves the Panel to another machine, it answers
   ping, and the USB keyboard works on the local console.
-- One USB image boots LexiOS on Linux 7.4-rc3 and LexiKernel, with Secure Boot on (in a VM), and grows its data
+- One USB image boots LexiOS on Linux 7.4-rc4 and LexiKernel, with Secure Boot on (in a VM), and grows its data
   partition to fill a physical stick on first boot.
 - Upstream llama.cpp runs on LexiOS on original Rust runtime libraries.
 - TokenGate gate kernels on the RX 7900 XTX (Vulkan) and RTX 2060 (CUDA).
@@ -1443,7 +1461,7 @@ usage checks: commercial users are trusted to buy what they use. The source code
 Copyright (c) 2026 LexiPanel.
 
 Third-party components keep their own licences and are credited in [Third-party credits](https://github.com/W61k3r/LexiSuite-Releases/wiki/Third-Party-Credits) and, inside every image, under
-`/usr/share/licenses`. Linux 7.4-rc3, included in the newest LexiOS image (tag `v7.4-rc3`, unmodified), is licensed under GPL-2.0; its corresponding source is
+`/usr/share/licenses`. Linux 7.4-rc4, included in the newest LexiOS image (tag `v7.4-rc4`, unmodified), is licensed under GPL-2.0; its corresponding source is
 provided on request to `source@lexipanel.com`.
 
 <div align="center">
