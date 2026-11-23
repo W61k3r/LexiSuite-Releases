@@ -1115,7 +1115,7 @@ unenrolled stick, a tampered rollback file and a tampered kernel. It has not yet
 the earlier images stopped. What the `051033e`
 image established:
 
-- Development USB image with Secure Boot (Linux entry on 7.4-rc1): signed with the LexiSuite development certificate.
+- Development USB image with Secure Boot (Linux entry on 7.4-rc3): signed with the LexiSuite development certificate.
   After that certificate is appended to the PC's db (the Microsoft keys stay), both menu entries boot with Secure Boot
   on. Verified in a VM from an unenrolled state: LexiKernel first and second start (it creates and then reuses its
   rollback-protection variable) and with an AMD IOMMU, Linux 7.4 to a working Panel, and refusals of a stick without
@@ -1363,15 +1363,16 @@ files on `5db82d6`.
 | Compile check for Apple silicon, engine and Panel workspaces (no linking, nothing run; 11/12, `3db31f8`) | passed, 0 errors |
 | Compile check for 64-bit Windows, engine and Panel workspaces (no linking, nothing run; 11/12, `3db31f8`) | passed, 0 errors |
 
-The engine's Vulkan tests run on the GPU: on this commit they ran on the RX 7900 XTX. The device tests for
+The engine's Vulkan tests run on the GPU: in the gate of `3a376f8` they ran on the RX 7900 XTX. The device tests for
 Qwen3.8 Flash-Next need the 94 GB model file and are not part of this run; they were run on the card separately on
 11/16/2026 (whole-token comparison against the CPU reference, prompt chunks against token-by-token processing at 600
 and 2,400 tokens, prompt reuse through the server). One Panel usability test
-(`m11_build_thread_fields_and_quantizer_arguments`) fails in the combined run on this commit as on the last one and
+(`m11_build_thread_fields_and_quantizer_arguments`) failed in the combined Panel run of `3a376f8` (11/22/2026), as on earlier versions, and
 passes when run alone.
 
-Known, on this commit and earlier ones alike: the update tool's lock tests (`self25_*`, `u24_11_*`) fail
-intermittently when the whole suite runs in parallel and pass on their own.
+In the full run of `00e4654` and earlier full runs, the update tool's lock tests (`self25_*`, `u24_11_*`) failed
+intermittently when the whole suite ran in parallel and passed on their own. They are not part of the per-version
+gate, so they were not run again on `3a376f8`.
 
 ### Proven
 
@@ -1379,12 +1380,15 @@ intermittently when the whole suite runs in parallel and pass on their own.
   depth, up to the full 262,144-token window (39.6 against 26.9 tok/s; see [Performance](#performance)).
 - Qwythos 9B served at a 524,288-token context on the same 24 GB card, ahead of llama.cpp b12531 in generation
   at every measured depth through d240.
+- Inkling-2-Mini served at a 524,288-token context on the same card with the whole model on it: 769 tok/s on a
+  523,264-token prompt, 47.0 tok/s generating with the model's draft head, ten of ten planted facts retrieved
+  (11/22/2026, `3a376f8`; see [Performance](#performance)).
 - **LexiKernel boots on real hardware.** A Lenovo ThinkPad P71 (i7-7700HQ) booted it from USB, got its address over
   DHCP, served the Panel to another machine and showed the local console.
 - **LexiKernel boots on a Ryzen desktop** (MSI X570, Ryzen 9 5900X, 24 CPUs, AMD IOMMU): both NVMe drives and the
   RTL8125B 2.5G card bind, the card gets its address over DHCP and serves the Panel to another machine, it answers
   ping, and the USB keyboard works on the local console.
-- One USB image boots LexiOS on Linux 7.4-rc1 and LexiKernel, with Secure Boot on (in a VM), and grows its data
+- One USB image boots LexiOS on Linux 7.4-rc3 and LexiKernel, with Secure Boot on (in a VM), and grows its data
   partition to fill a physical stick on first boot.
 - Upstream llama.cpp runs on LexiOS on original Rust runtime libraries.
 - TokenGate gate kernels on the RX 7900 XTX (Vulkan) and RTX 2060 (CUDA).
@@ -1393,8 +1397,9 @@ intermittently when the whole suite runs in parallel and pass on their own.
 ### Not yet proven
 
 - Booting the Secure Boot image on a physical Secure Boot PC.
-- GPU inference on LexiKernel on real hardware: it drives GPUs only through a Linux guest so far, and the native
-  RDNA3 driver has not run on a card.
+- GPU inference on LexiKernel on real hardware: it drives GPUs only through a Linux guest so far. The native RDNA3
+  driver starts a physical RX 7900 XTX up to a command buffer that completes with an interrupt (11/11/2026) and the
+  Turing driver runs a copy job on a physical RTX 2060 (11/12/2026); neither runs a shader yet.
 - LexiKernel's CPU and storage readouts on real hardware (tested in VMs and suites).
 - VFIO device assignment in the Rust VM host with a real device.
 - A gated TokenGate model serving faster than the same model ungated.
@@ -1404,7 +1409,9 @@ intermittently when the whole suite runs in parallel and pass on their own.
 - LexiKernel runs all of a process's threads on one CPU, so CPU inference there is far slower than on Linux.
 - Gemma 4 31B at its largest contexts (about 196,000 tokens and up on a 24 GB card): after one prompt, a later prompt
   that needs a working buffer of a different size can be refused with an out-of-memory error (see
-  [Performance](#performance)). That is the current engine work.
+  [Performance](#performance)).
+- Inkling-2-Mini: text only (the model's image input is not implemented); a 1,048,576-token context does not fit a
+  24 GB card; Quant Forge fits it at 8 bits only.
 - Qwen3.8 Flash-Next: the draft head is not used in serving, a second card adds an expert cache but is not used for
   prompt processing, and the Panel has no screen for the GPU path yet.
 - Qwen3.8 Flash-Next through the server: a request is limited to 1 MiB, about 250,000 tokens of source code, although
