@@ -1217,6 +1217,20 @@ vision, speech, image generation and native quantization tools.
 
 ## Quick start
 
+### Install from the USB stick
+
+Write the image to a stick ([lexipanel.com/download](https://lexipanel.com/download/)), then either boot the stick
+(LexiOS starts the Panel; open the address shown on the screen) or install the Panel and engine on a computer that
+keeps its own operating system, from the stick's `LEXISUITE` volume:
+
+| System | On image `8f6f542` | Guide |
+|---|---|---|
+| Linux (x86_64, systemd) | `linux/lexisuite-install` (install for one user or all users, run from the stick, upgrade, roll back, uninstall, check) and the stick writer `linux/lexisuite-flash` | [Install on Linux](https://github.com/W61k3r/LexiSuite-Releases/wiki/Install-On-Linux) |
+| Windows 10 / 11 (x64) | not yet: `windows/` holds a note. The installer builds for Windows from this source and goes into a coming image; it has not been run on a Windows PC | [Install on Windows](https://github.com/W61k3r/LexiSuite-Releases/wiki/Install-On-Windows) |
+| macOS 13+ | not yet: `macos/` holds a note. It compiles for macOS but is not linked on the build machine and has never run on a Mac | [Install on macOS](https://github.com/W61k3r/LexiSuite-Releases/wiki/Install-On-macOS) |
+
+To build from source instead:
+
 ### Requirements
 
 - Rust 1.100.0 (`rustup toolchain install 1.100.0`): the pinned toolchain, on which this version's gates ran and its
@@ -1458,6 +1472,8 @@ gate; in the full run of `8f6f542` every test passed.
 
 ### Known gaps
 
+- Native installers: only Linux is on the image (`linux/lexisuite-install`, `linux/lexisuite-flash`); the Windows and
+  macOS installers are not on image `8f6f542`, and none has been run on a range of real machines yet.
 - LexiKernel runs all of a process's threads on one CPU, so CPU inference there is far slower than on Linux.
 - Gemma 4 31B at its largest contexts (about 196,000 tokens and up on a 24 GB card): after one prompt, a later prompt
   that needs a working buffer of a different size can be refused with an out-of-memory error (see
