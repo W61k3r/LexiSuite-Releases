@@ -616,7 +616,8 @@ Tokens per second; the highest value of each measure in **bold**:
   `cce75e0` build, run again the same morning on its own file, measured the same as this version
   (2,251, 64.6 and 131.8), and
   this version on the file without the image tower measured 2,242, 64.5
-  and 131.5: the difference is in the day's run, not in this version's code or in the image tower.
+  and 131.5: the difference is not in this version's code or in the image tower. Between the two dates the test machine's memory
+  was changed (32 GB to 48 GB, modules of different speeds), the likely cause.
 - **It finds what it read:** ten facts planted at 1% to 99% of the prompt were all answered exactly, at
   260,864 tokens (10 of 10) and at 523,264 tokens (10 of 10).
 - **Accuracy against a reference implementation of the published weights** (F32, 510 positions of one text, 4-bit
