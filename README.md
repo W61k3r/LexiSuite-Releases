@@ -29,7 +29,7 @@ open the address shown on the screen.
 
 ![Language](https://img.shields.io/badge/language-Rust%202024-b7410e?style=flat-square)
 ![Rust](https://img.shields.io/badge/rust-1.100.0-b7410e?style=flat-square)
-![Lines](https://img.shields.io/badge/Rust-1.99M%20lines-2b6cb0?style=flat-square)
+![Lines](https://img.shields.io/badge/Rust-2.00M%20lines-2b6cb0?style=flat-square)
 ![Crates](https://img.shields.io/badge/crates-340-2b6cb0?style=flat-square)
 ![Tests](https://img.shields.io/badge/tests-16%2C806-2b6cb0?style=flat-square)
 ![GPU](https://img.shields.io/badge/GPU-Vulkan%20%7C%20CUDA-2f855a?style=flat-square)
@@ -86,7 +86,7 @@ What you get, concretely:
 - **Not only its own engine.** The Panel also runs and manages llama.cpp, vLLM, Camelid, audio.cpp,
   stable-diffusion.cpp and ComfyUI, sets up Hermes agents and Open WebUI against them, and attaches to Ollama, LM Studio
   and any OpenAI-compatible server ([details](#it-also-runs-the-engines-and-front-ends-you-already-use)).
-- **Security that is tested, not asserted:** about 3,800 of the 16,806 tests exist to prove that something is refused.
+- **Security that is tested, not asserted:** about 3,800 tests (counted on `3a376f8`; 17,176 tests in all on `8f6f542`) exist to prove that something is refused.
 
 ---
 
@@ -118,7 +118,7 @@ What follows from owning every layer:
   exact at a 240,000-token context, the allocator, the admission rule and the kernel interface were all in reach.
 - **One rule set.** The same permission function decides every page, form and guided-task step; the same fail-closed
   policy applies from the boot loader to an HTTP route.
-- **One language.** 1.99 million lines of Rust in 340 crates; `unsafe` is confined to drivers, hardware paths and
+- **One language.** 2.00 million lines of Rust in 340 crates; `unsafe` is confined to drivers, hardware paths and
   FFI boundaries.
 - **It can be reasoned about by one person, or one AI.** The whole system is in one repository with one build.
 
@@ -407,7 +407,7 @@ flowchart TB
 │   ├── deploy/              Install scripts and packaging
 │   └── third-party-licenses/
 ├── lexios/
-│   ├── lexikernel/          LexiKernel: 100 crates
+│   ├── lexikernel/          LexiKernel: 99 crates
 │   │   ├── crates/          Kernel subsystems
 │   │   └── drivers/         NVMe, AHCI, xHCI, USB, virtio, NICs, GPU blocks
 │   ├── tools/               LexiOS userland, 52 crates
@@ -709,6 +709,7 @@ New since version `cce75e0` of 11/23/2026:
 - **Groundwork for more than one card:** the tensor-parallel shard plan with its memory accounting, the all-reduce,
   and Inkling 2's CPU reference split across N ranks. Serving across several cards is not in this version.
 - **Security, crash and power-loss repairs** across the Panel, the installer, the engine, LexiKernel and LexiOS.
+- **An all-in-one image with Inkling-2-Mini inside** (18.1 GB, 23.5 GB when written; image tower included) and the model files: [Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA](https://huggingface.co/Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA).
 - **Every test in the tree was run on this version**, not only the release gates: LexiOS with LexiKernel 7,158 passed, LexiEngine 5,882 passed, Panel 4,266 passed plus its two large-disk tests in the gate, 0 failed.
 
 ## New in version `cce75e0` (11/23/2026)
@@ -1341,7 +1342,7 @@ closed, and the test suite spends as much effort on what must be refused as on w
 **By the numbers (this source):**
 - 321 of 389 crate roots forbid `unsafe` outright and 9 more deny it; `unsafe` is confined to 170 of 4,362 Rust files
   (drivers, the kernel's hardware paths, the VM host's system-call wrapper and FFI boundaries).
-- 16,806 test functions, of which about 3,800 are named for refusal, tamper, malformed-input, bounds or forgery cases.
+- 17,176 test functions (version `8f6f542`), of which about 3,800 are named for refusal, tamper, malformed-input, bounds or forgery cases.
 
 **Boot and kernel**
 - Secure Boot chain signed with the LexiSuite development certificate; tampered kernels and rollback files are
@@ -1397,26 +1398,20 @@ closed, and the test suite spends as much effort on what must be refused as on w
 
 ### Last test runs
 
-The source in the repository is version `8f6f542`, 11/25/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,433 passed, 0 failed; server 608 passed, 0 failed; LexiKernel 846 passed, 0 failed; LexiOS 381 passed, 0 failed; the Panel gate 2,592 passed, 0 failed. Every test in the tree was also run on this version: LexiOS with LexiKernel 7,158 passed, LexiEngine 5,882 passed, Panel 4,266 passed plus its two large-disk tests in the gate, 0 failed. The table below is the full run on version `00e4654`, 11/17/2026. The Windows and Apple
-silicon compile checks were last run on 11/12/2026 on version `3db31f8`, and the two Panel tests that build 21 GB of
-files on `5db82d6`.
+The source in the repository is version `8f6f542`, 11/25/2026; its gate with Rust 1.100.0: LexiEngine workspace 4,433 passed, 0 failed; server 608 passed, 0 failed; LexiKernel 846 passed, 0 failed; LexiOS 381 passed, 0 failed; the Panel gate 2,592 passed, 0 failed. Every test in the tree was also run on this version: LexiOS with LexiKernel 7,158 passed, LexiEngine 5,882 passed, Panel 4,266 passed plus its two large-disk tests in the gate, 0 failed. The table below is the run of version `8f6f542`, 11/25/2026, except where a row names another date.
 
 | Check | Result |
 |---|---|
-| Compile check, all four workspaces (engine, Panel, LexiOS, LexiKernel) | passed |
-| LexiEngine workspace tests, including the VM host crates | 4,214 passed, 0 failed |
-| LexiEngine server tests, CUDA and Vulkan | 570 passed, 0 failed |
-| TokenGate, scheduler, KV and prefix caches, server, Vulkan and CUDA kernel packages | 1,090 passed, 0 failed |
-| CUDA kernel suite on the RTX 2060 (kernels compared on the card) | 185 passed, 0 failed |
-| Panel library and support crates | 2,354 passed, 0 failed |
-| Panel integration targets | 70 passed; the two tests that build 21 GB of files run on their own |
-| Panel tests that build 21 GB of files (11/13 morning, `5db82d6`) | both pass |
-| Host firewall test, five repeats | 5 of 5 passed |
-| LexiOS tools (hardware qualification, init, live system, network bootstrap, setup, SSH, image tool) | 1,107 passed, 0 failed |
-| LexiOS appliance, storage, setup and network packages | 379 passed, 0 failed |
-| LexiOS package manager, compatibility qualification, trust tool and driver-domain relay | 54 passed, 0 failed |
-| LexiOS live system package | 76 passed, 0 failed |
-| LexiKernel suites (console, IOMMU, network, ACPI, xHCI, procfs, Linux ABI, kernel library, GPU drivers; some packages run in more than one) | 841 and 899 passed, 0 failed |
+| Gate: LexiEngine workspace tests, including the VM host crates (Rust 1.100.0) | 4,433 passed, 0 failed |
+| Gate: LexiEngine server tests, CUDA and Vulkan; the Vulkan tests on the RX 7900 XTX | 608 passed, 0 failed |
+| Gate: LexiKernel suites | 846 passed, 0 failed |
+| Gate: LexiOS appliance, storage, setup and network packages | 381 passed, 0 failed |
+| Gate: Panel library, support crates and integration targets | 2,592 passed, 0 failed |
+| Gate: the two Panel tests that build 21 GB of files, in their own step | both pass |
+| Every test in the tree: LexiOS with LexiKernel | 7,158 passed, 0 failed |
+| Every test in the tree: LexiEngine | 5,882 passed, 0 failed |
+| Every test in the tree: Panel | 4,266 passed, 0 failed |
+| CUDA kernel suite on the RTX 2060, kernels compared on the card (11/17, `00e4654`) | 185 passed, 0 failed |
 | Compile check for Apple silicon, engine and Panel workspaces (no linking, nothing run; 11/12, `3db31f8`) | passed, 0 errors |
 | Compile check for 64-bit Windows, engine and Panel workspaces (no linking, nothing run; 11/12, `3db31f8`) | passed, 0 errors |
 
