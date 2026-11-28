@@ -696,28 +696,40 @@ else running, November 21, 2026, on version `e2184ab`. Each value is one run; ge
 
 ## New in version `d484004` (11/27/2026)
 
-**The Panel was rebuilt page by page, LexiKernel can use every CPU, and the stick carries a Windows installer.**
+**Two days of work, 206 changes. The Panel was rebuilt page by page, LexiKernel went from one CPU core to all of them, and the first pieces for running GPUs without Linux went in.**
 
-**Works now**
+### The Panel, rebuilt by hand (66 changes)
 
-- **A Panel you can read.** One header, twelve themes, a file picker on every path field, right-click menus, and pages rewritten in plain words: Parameters, Hardware, Diagnostics, Power options, GPU tuning, Models. Layout is a choice: top tabs (the default) or a side tree.
-- **Switch an instance's engine** between Lexi Engine and llama.cpp from one page.
-- **Abliteration lab:** pick models with toggles, pick the drive to write to, check the plan first. The original model is never changed.
-- **Your own model folders:** add up to 16; every model list reads them.
-- **LexiKernel on all CPUs**, behind boot switches that are off by default. Run in a virtual machine at 2, 4 and 8 CPUs.
-- **An all-in-one image** with Inkling-2-Mini inside (18.1 GB download, 32 GB stick).
-- Built with Rust 1.100.1.
+The Panel worked, but it read like an engineering console: raw data on screen, fields without names, boxes inside boxes. Every page was gone through.
 
-**In the code, not usable yet**
+- **One header and one navigation** in place of five stacked bars, and twelve themes.
+- **Nothing has to be typed that can be picked:** a file and folder picker on every path field, a chooser for an instance's cards, right-click menus on instances, files and table cells.
+- **Parameters in the order you set them,** and a switch between Lexi Engine and llama.cpp for each instance on one page.
+- **Pages in plain words:** Hardware shows what the machine reports in units a person reads, Diagnostics lists what needs attention first, Power options and GPU tuning say what each control does.
+- **Abliteration lab:** pick models with toggles, pick the drive to write to, check the plan before anything is written. The original model is never changed.
+- **Layout is your choice:** top tabs (the default) or a side tree.
 
-- **Native GPU drivers for LexiKernel** (AMD, NVIDIA, Intel): compiled in, never run on a card. GPU work under LexiKernel still goes through a Linux guest.
-- **Windows installer and stick writer:** on the stick, never run on a Windows PC. The macOS installer is not on the stick.
-- **Install to an internal disk:** not in this image.
-- **One model across several cards:** groundwork only.
-- **64-bit ARM:** boots in an emulator, nothing more.
-- **New Inkling speed options** (lookup drafts, new attention forms) and the `qad-dense` quantizer: present, off by default, not measured.
+### LexiKernel on every core (99 changes)
 
-**Speed** (Inkling-2-Mini, one Radeon RX 7900 XTX, after a 16,384-token prompt, November 27–28)
+Until this version LexiKernel ran all threads of a program on one CPU, which was its largest gap to Linux. Three rounds of work closed it: timers and scheduling on every CPU, threads that move between cores with their full vector state, memory handled per NUMA node, huge pages, and cross-CPU signals that a core answers even inside a long system call. With the new boot switches on, LexiKernel booted at 2, 4 and 8 CPUs in a virtual machine and served the Panel to 8 clients with no failed request. The switches are off by default in this image.
+
+LexiKernel's own GPU drivers for AMD, NVIDIA and Intel are now part of the build. Their first runs on real cards are the next milestone; until then GPU work under LexiKernel goes through a Linux guest, and the image's Linux 7.4 entry is the one for daily use.
+
+### LexiEngine (27 changes)
+
+- Groundwork for running one model across several cards.
+- New draft options for Inkling 2, off by default until they are measured.
+- A quantizer that trains with the rounding in the loop, for better 4-bit files.
+- The whole tree moved to Rust 1.100.1.
+
+### On the stick
+
+- The Windows installer and stick writer are on the image for the first time. They are built and checked on Linux; a run on a Windows PC comes next.
+- An all-in-one image with Inkling-2-Mini inside (18.1 GB download, 32 GB stick).
+
+### Speed on this version
+
+Inkling-2-Mini on one Radeon RX 7900 XTX, after a 16,384-token prompt, November 27–28:
 
 | | Reads the prompt | Generates |
 |---|---:|---:|
@@ -725,18 +737,25 @@ else running, November 21, 2026, on version `e2184ab`. Each value is one run; ge
 | llama.cpp b12722 | 1,060 | 42.9 |
 | Strata 0.2.23 (8-bit cache) | 2,075 | 53.9 |
 
-At a 261,632-token prompt LexiEngine reads at 1,157 tok/s and generates at 48.7 (63.2 with the draft head). The llama.cpp row is the build of November 25, because the build of November 28 ran this model at 7.6 tok/s on this card. Other models have not been measured on this version yet. Tables and method: [Benchmarks](https://github.com/W61k3r/LexiSuite-Releases/wiki/Benchmarks).
+At a 261,632-token prompt LexiEngine reads at 1,157 tok/s and generates at 48.7 (63.2 with the draft head). The llama.cpp row is its build of November 25, because its build of November 28 ran this model at 7.6 tok/s on this card. The other models are being measured on this version now. Tables and method: [Benchmarks](https://github.com/W61k3r/LexiSuite-Releases/wiki/Benchmarks).
 
-**Tested:** every test in the tree, 17,932 run, none failed. Both images passed nine boot checks in a virtual machine. Not booted on a physical machine.
+### Next
 
-**Download**
+- First runs of LexiKernel's GPU drivers on real cards, and a boot of this version on a physical machine.
+- Installing LexiOS from the stick to an internal disk (not in this image).
+- The Windows installer run on Windows; a macOS installer.
+- Serving one model across several cards.
+
+### Tested and download
+
+Every test in the tree ran on this version: 17,932 tests, none failed. Both images passed nine boot checks in a virtual machine.
 
 - `LexiSuite-d484004-secureboot-dev.img.xz`, 381 MB, SHA-256 `992ab9a8b2be6e5b60823211e04bd2524170c7ee4f4c472ed86a59e9cc1e6a08`: [download page](https://lexipanel.com/download/)
 - `LexiSuite-d484004-inkling-secureboot-dev.img.xz`, 18.1 GB, SHA-256 `b3d691539d0ad3f65ff5ed09e87724440e4ba09e32bcabe3fec4054853218193`: [Hugging Face](https://huggingface.co/Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA)
 
-**Everything that changed:** [all 206 changes, one line each](https://github.com/W61k3r/LexiSuite-Releases/wiki/Changes-d484004).
+Every change, one line each: [all 206](https://github.com/W61k3r/LexiSuite-Releases/wiki/Changes-d484004).
 
-*Corrected November 28: the site's front page showed an old version label, and the README claimed every benchmark in it was recent while its lead tables were nine days old. Both are fixed, and tables from older versions are now labeled as such.*
+*Corrected November 28: the site's front page showed an old version label, and the README claimed every benchmark in it was recent while its lead tables were nine days old. Both are fixed, and tables from older versions are labeled as such.*
 
 ## New in version `8f6f542` (11/25/2026)
 
