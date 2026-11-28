@@ -136,12 +136,32 @@ Comparisons in one line each:
 
 ## The numbers
 
-Measured on November 18–19, 2026, on version `0a5222f`, against llama.cpp b12531 and, on Qwen3.8 Flash-Next,
+The current version is `d484004` (11/27/2026). On this version one model has been measured against other engines:
+Inkling-2-Mini on November 27–28, 2026, against llama.cpp b12722 and Strata 0.2.23 the same days. Radeon RX 7900 XTX capped at
+291 W, Intel i7-9700, host kernel Linux 7.3, one slot, nothing else running, one run each.
+
+| What (version `d484004`) | LexiEngine | llama.cpp b12722 |
+|---|---|---|
+| Inkling-2-Mini (17.6 GB, 4-bit K/V cache), 11/27–28/2026, version `d484004`, against llama.cpp b12722 the same day: generation after a 16,384-token prompt | **64.6 tok/s** (131.1 with the model's draft head) | 42.9 tok/s (Strata 0.2.23, 8-bit cache: 53.9) |
+| Same, prompt processing at 16,384 tokens | **2,244 tok/s** | 1,060 tok/s (Strata: 2,075) |
+| Same, a 261,632-token prompt | **1,157 tok/s**, then 48.7 tok/s (63.2 with the draft head) | not measured yet |
+| Same, a 523,264-token prompt at a 524,288-token context | **766 tok/s**, then 39.5 tok/s (46.8 with the draft head) | not run |
+| Largest context the engine accepts | 1,048,576 tokens | |
+| Rust source | 2,061,526 lines in 4,528 files, 351 crates (version `d484004`) | |
+| Tests | 17,806 test functions (version `d484004`); about 3,800 are named for a refusal or rejection (counted on `3a376f8`) | |
+| Panel | 1,165 registered features, 59 guided tasks | |
+
+### Measured on version `0a5222f`, November 18–19, 2026 (not repeated on `d484004`)
+
+These comparisons are nine days and six versions old. They are kept because nothing newer exists for these models; they describe
+version `0a5222f`, not the current one.
+
+Against llama.cpp b12531 and, on Qwen3.8 Flash-Next,
 Strata 0.2.16. A spot check of release `84c95dd` on November 19 (Qwen3.8 27B, Qwythos 9B, Nemotron E4B with DFlash, the 74B-A9B) gave the same speeds within run-to-run variation.
 Radeon RX 7900 XTX capped at 291 W, Intel i7-9700, host kernel Linux 7.3, one slot, nothing else running.
 The full tables and settings are in [Performance](#performance).
 
-| What | LexiEngine | llama.cpp b12531 |
+| What (version `0a5222f`) | LexiEngine | llama.cpp b12531 |
 |---|---|---|
 | Qwen3.8 27B Q4_K_M, 262,144-token context, 4-bit K/V cache, draft-head speculation: generation, 62-token prompt | **75.11 tok/s** | 65.82 tok/s |
 | Same, generation after a 3,631-token prompt | **71.38 tok/s** | 58.54 tok/s |
@@ -160,14 +180,6 @@ The full tables and settings are in [Performance](#performance).
 | Nemotron 3.5 Bolt E4B Q8, DFlash draft model (code / story / mid / long), generation (tok/s) | **268.8 / 228.9 / 268.7 / 196.1** | 252.6 / 216.2 / 213.8 / 183.6 |
 | Nemotron 3.5 Bolt 74B-A9B Q4, repeated requests (code / story), generation (tok/s) | **18.74 / 19.97** | 13.96 / 10.63 |
 | Same, first requests after loading, model file not yet in memory (code / story / t1 / t2) | **2.22 / 4.52 / 9.2 / 12.98** | 1.59 / 1.94 / 4.64 / 6.30 |
-| Largest context the engine accepts | 1,048,576 tokens | |
-| Inkling-2-Mini (17.6 GB, 4-bit K/V cache), 11/27–28/2026, version `d484004`, against llama.cpp b12722 the same day: generation after a 16,384-token prompt | **64.6 tok/s** (131.1 with the model's draft head) | 42.9 tok/s (Strata 0.2.23, 8-bit cache: 53.9) |
-| Same, prompt processing at 16,384 tokens | **2,244 tok/s** | 1,060 tok/s (Strata: 2,075) |
-| Same, a 261,632-token prompt | **1,157 tok/s**, then 48.7 tok/s (63.2 with the draft head) | not measured yet |
-| Same, a 523,264-token prompt at a 524,288-token context | **766 tok/s**, then 39.5 tok/s (46.8 with the draft head) | not run |
-| Rust source | 2,061,526 lines in 4,528 files, 351 crates (version `d484004`) | |
-| Tests | 17,806 test functions (version `d484004`); about 3,800 are named for a refusal or rejection (counted on `3a376f8`) | |
-| Panel | 1,165 registered features, 59 guided tasks | |
 | GPU kernels | 188 shader and CUDA kernel sources written for this engine | |
 
 Qwen3.8 Flash-Next (94 GB mixture of experts) on one 24 GB card at a 262,144-token context, time from the request to the
@@ -1347,8 +1359,8 @@ A request larger than the context window gets an HTTP 400 stating the reason, an
 | `realtek-nic` | RTL8125B 2.5G, RTL8168/8169 | RTL8125B on an MSI X570 board (11/12/2026): DHCP, Panel served to another machine. RTL8168/8169: emulated chip in unit tests only |
 | `xhci`, `usb-class` | USB host and USB storage | ThinkPad P71, real hardware (11/03/2026) |
 | `nvme`, `ahci` | Storage | QEMU |
-| `amd-rdna3` and `amdgpu-*` | Radeon RX 7900 XTX | Physical card passed through to LexiKernel in QEMU (11/11/2026): firmware, power, hubs, scheduler firmware, compute queue, user address space, interrupt-delivered fences. No shader yet |
-| `nouveau-gsp` | GeForce RTX 2060 (TU106) | Physical card passed through to LexiKernel in QEMU (11/12/2026): firmware-security image, booter and GSP firmware run; resource-manager objects, engine table, instance-memory window, host-owned GPU address space, a command channel, and one copy-engine job that copies a page. Bring-up builds only. No graphics or compute context yet |
+| `amd-rdna3` and `amdgpu-*` | Radeon RX 7900 XTX | Physical card passed through to LexiKernel in QEMU (11/11/2026): firmware, power, hubs, scheduler firmware, compute queue, user address space, interrupt-delivered fences. No shader yet (evidence from an older version; not repeated on `d484004`) |
+| `nouveau-gsp` | GeForce RTX 2060 (TU106) | Physical card passed through to LexiKernel in QEMU (11/12/2026): firmware-security image, booter and GSP firmware run; resource-manager objects, engine table, instance-memory window, host-owned GPU address space, a command channel, and one copy-engine job that copies a page. Bring-up builds only. No graphics or compute context yet (evidence from an older version; not repeated on `d484004`) |
 
 The 2.5G RTL8125B driver runs on the chip's built-in microcode, and refuses other RTL8125 revisions.
 
@@ -1501,7 +1513,7 @@ gate; in the full run of `d484004` every test passed.
 - The CUDA lane speculates on greedy requests only.
 - TokenGate: gated prefill on the CPU was slower than ungated on the one published checkpoint tried, and that
   checkpoint did not answer the record-list test prompts even ungated (it was trained on essays and chat).
-- One LexiKernel browser audit froze right after the console page appeared (1 of 5 boots of an image of 11/06); the
+- Open, not re-tested: one LexiKernel browser audit froze right after the console page appeared (1 of 5 boots of an image of 11/06; that audit has not been repeated; the six virtual-machine boots of `d484004`'s kernel on 11/27 served the Panel to 8 clients without a failed request); the
   cause is not yet known.
 - Panel clean-up left: some older API routes keep their own role checks, and a few timing-sensitive tests can fail
   when the whole suite runs in parallel on a loaded machine (they pass when run alone).
