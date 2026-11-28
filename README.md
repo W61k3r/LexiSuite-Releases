@@ -8,10 +8,10 @@ boots from one USB image. Nothing in it depends on a cloud service.
 
 It is not a wrapper around llama.cpp, Ollama, vLLM or PyTorch. The inference engine, its GPU kernels, the scheduler,
 the samplers and the HTTP APIs are original Rust and GLSL/CUDA code, and on the cards it is tuned for it is measured
-against the newest llama.cpp release on every change (see [The numbers](#the-numbers)).
+against llama.cpp and Strata, with the build and the date beside every number (see [The numbers](#the-numbers)).
 
-It is developed every day by its author as their own primary AI platform. The test counts and the benchmark dates in
-this file are all from the current week.
+It is developed every day by its author as their own primary AI platform. The test counts in this file are
+those of the current version; every benchmark carries its own date and version.
 
 **Current version: `d484004`, 11/27/2026.** The USB image, the source, this page, the wiki and the site describe this version. This page, the wiki and
 [lexipanel.com](https://lexipanel.com/) share the November 18–19 benchmark results and the Inkling-2-Mini results of November 27–28, 2026.
@@ -1438,7 +1438,7 @@ The source in the repository is version `d484004`, 11/27/2026; its gate with Rus
 
 The engine's Vulkan tests run on the GPU: in the gate and the full run of `d484004` they ran on the RX 7900 XTX. The device tests for
 Qwen3.8 Flash-Next need the 94 GB model file and are not part of this run; they were run on the card separately on
-11/16/2026 (whole-token comparison against the CPU reference, prompt chunks against token-by-token processing at 600
+11/27/2026, on this version's engine source (whole-token comparison against the CPU reference, prompt chunks against token-by-token processing at 600
 and 2,400 tokens, prompt reuse through the server). The two Panel tests that build 21 GB of files
 (`m11_build_thread_fields_and_quantizer_arguments`, `live_routes_in_isolated_home`) run in their own step of the gate
 with that space free; both passed on `d484004` (11/27/2026).
