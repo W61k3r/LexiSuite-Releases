@@ -696,22 +696,47 @@ else running, November 21, 2026, on version `e2184ab`. Each value is one run; ge
 
 ## New in version `d484004` (11/27/2026)
 
-New since version `8f6f542` of 11/25/2026 (version `4d109a2`, built on 11/25, was not published; its changes are included):
+**The Panel was rebuilt page by page, LexiKernel can use every CPU, and the stick carries a Windows installer.**
 
-- **LexiKernel on many CPUs, behind boot switches.** Every switch is off by default, so a plain boot behaves as before. `lk.user_cpus=all` with `lk.shootdown=nmi` runs user threads on every CPU (TLB shootdowns are answered from an NMI, so a CPU in a long system call still answers); `lk.migrate=on` lets an idle thread resume on another CPU; `lk.kthreads=all` spreads kernel work and timers over every CPU; `lk.hugepages=on` and `lk.frame_caches=on` add huge pages and per-CPU page caches. With `lk.process_lock=per-process`, sleeps, private futexes, `mprotect`, `munmap`, `madvise`, clock reads and `/sys` lookups run without the machine-wide lock; every other system call still takes that one lock, so the switch reports `refused`. With every switch on, LexiKernel booted in a virtual machine at 2, 4 and 8 CPUs and served the Panel to 8 clients for 40 seconds with no fault, no panic and no failed request. The Panel's LexiKernel page shows each switch's state and sets them for the next boot. See [LexiKernel on many CPUs](https://github.com/W61k3r/LexiSuite-Releases/wiki/LexiKernel-Many-CPUs).
-- **Native GPU drivers are linked in, not yet run on a card:** AMD Radeon (queues, memory, SDMA copies, clocks; RDNA 2, RDNA 3, RDNA 4 and the APUs), NVIDIA through its GSP firmware and the nouveau interface (Turing to Blackwell), Intel Xe, and a DRM core with render nodes, each behind its own switch (`lk.amdgpu`, `lk.nouveau`, `lk.xe`, `lk.drm`). None has run on a real card in this version; GPU work under LexiKernel still goes through a Linux driver-domain guest.
-- **64-bit ARM boots in QEMU** (GIC interrupt controller, timers, 64 cores) as its own boot chain; it is not yet the production kernel and has not run on ARM hardware.
-- **LexiKernel fixes:** a new connection on a finished address pair starts a new connection instead of stalling a request for 6 seconds; a service that is still starting is reported as a wait (`LK:PID1:WAIT`), not a fault; the supervisor's start window is a stall limit, so an engine that is loading its model is not stopped; files on `/data` are read ahead, so a model loads without a store request per read.
-- **The Panel, reworked page by page:** one header and navigation; a first-run flow that ends with a working instance; 12 themes (Classic, Daylight, Datacenter, Hypervisor, High contrast, Phosphor, Wasteland, Rain, War Room, Neon, Starship, Brass); a **Layout** choice beside the theme, with **Top tabs** (the default) or **Side tree** (instances and tools in a list on the left, on screens at least 1,100 pixels wide); Engines with a working engine switch between Lexi Engine and llama.cpp; right-click menus on instances, files and table cells; a file and folder picker on every path field; model folders of your own (up to 16, read only); Parameters in order (engine and backend first, then the instance's settings in sections) with a device chooser for the instance's cards; readable data instead of raw JSON, and every field named. See [Navigation and Help](https://github.com/W61k3r/LexiSuite-Releases/wiki/Panel-Navigation-and-Help), [Models](https://github.com/W61k3r/LexiSuite-Releases/wiki/Panel-Models), [Instances](https://github.com/W61k3r/LexiSuite-Releases/wiki/Panel-Instances).
-- **Panel pages rebuilt:** the Abliteration lab chooses models with toggles and the drive to write to (with its free space), checks the plan without writing, makes one copy at a time and never changes the original; Hardware shows only what the machine reports, in units a person reads; Diagnostics shows what needs attention first; Power options, GPU tuning, Time and Training in plain words; Crashes waits while a report is still being read; a **Create a GGUF** card at the top of Fit (Q4_K_M or Q8_0 from a full-precision GGUF); the LexiKernel page (switches now and for the next boot, CPU topology, NUMA nodes, huge pages, native GPU status). See [Fit Lab](https://github.com/W61k3r/LexiSuite-Releases/wiki/Panel-Fit-Lab), [LexiOS and Secure Boot](https://github.com/W61k3r/LexiSuite-Releases/wiki/Panel-LexiOS-and-Secure-Boot).
-- **Engine:** Inkling 2 lookup drafts and two more forms of run attention, behind switches that are off by default and not yet measured on the card; Inkling 2 loads on integrated graphics; a forced prompt pass is accepted only when it fits; groundwork for more than one card (shared rank queues, per-card memory admission, host-staged collectives, tensor-parallel graphs for the Qwen3.5 family; serving across several cards is not in this version); the quantize tool's `qad-dense`, quantization-aware distillation of a dense model into 4-bit blocks (not yet measured on the card).
-- **A LoRA framework of its own** (from version `4d109a2` of 11/25, built but not published): adapter files version 2 (LoRA, rsLoRA, DoRA, per-pass and per-expert adapters, stacking, merging), adapters made without training (PiSSA, OLoRA, error SVD, EoRA), a training core (rsLoRA, DoRA, LoRA+, QLoRA bases, 8-bit optimizer states, exact resume), training data and objectives (SFT, distillation, DPO, ORPO, SimPO, decisions), an evaluator, a converter to looped models, serving with adapters chosen per request and loaded while running, and adapter runs on the Panel's Training page. Training runs on the processor.
-- **Enterprise operation** (also from `4d109a2`): checked transactional installer updates and rollback with authenticated media; the Panel fleet's durable action queue with authorization checked when an action runs; tenant authorization, a recoverable journal and metering for decisions; per-credential limits, privacy deletion, signed updates, alerts and tenant-bound accounts; LexiOS qualification bound to real inference evidence, A/B transitions and a support bundle; the engine server's key lifecycle and startup report.
-- **The Windows installer is on the image** for the first time: the installer `windows/LexiSuite-Setup.exe`, the stick writer `windows/lexisuite-flash.exe`, and the Panel and engine in `suite/windows-x86_64/`, built for 64-bit Windows by the release build; they import only Windows system libraries, and their license notices are in `windows/licenses/`. None of them has yet run on a Windows PC: the installer's tests run on Linux in every gate, its Windows-only code has not run anywhere. The macOS installer is still not on the image.
-- **Rust 1.100.1** is the pinned toolchain: the tree, the gates, the full test runs and the image are built with it.
-- **Speed:** Inkling-2-Mini measured on this version: after a 16,384-token prompt LexiEngine processes the prompt at 2,244 tok/s and generates at 64.6 (131.1 with the draft head); llama.cpp b12722 1,060 and 42.9; Strata 0.2.23 2,075 and 53.9 (53.7 with its drafter). See [Inkling-2-Mini](#inkling-2-mini-looped-mixture-of-experts-at-up-to-a-524288-token-context-on-one-24-gb-card).
-- **An all-in-one image with Inkling-2-Mini inside** (18.1 GB, 23.5 GB when written; image tower included) and the model files: [Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA](https://huggingface.co/Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA).
-- **Every test in the tree was run on this version**, not only the release gates: LexiOS with LexiKernel 7,624 passed, LexiEngine 5,956 passed, Panel 4,352 passed plus its two large-disk tests in the gate, 0 failed.
+**Works now**
+
+- **A Panel you can read.** One header, twelve themes, a file picker on every path field, right-click menus, and pages rewritten in plain words: Parameters, Hardware, Diagnostics, Power options, GPU tuning, Models. Layout is a choice: top tabs (the default) or a side tree.
+- **Switch an instance's engine** between Lexi Engine and llama.cpp from one page.
+- **Abliteration lab:** pick models with toggles, pick the drive to write to, check the plan first. The original model is never changed.
+- **Your own model folders:** add up to 16; every model list reads them.
+- **LexiKernel on all CPUs**, behind boot switches that are off by default. Run in a virtual machine at 2, 4 and 8 CPUs.
+- **An all-in-one image** with Inkling-2-Mini inside (18.1 GB download, 32 GB stick).
+- Built with Rust 1.100.1.
+
+**In the code, not usable yet**
+
+- **Native GPU drivers for LexiKernel** (AMD, NVIDIA, Intel): compiled in, never run on a card. GPU work under LexiKernel still goes through a Linux guest.
+- **Windows installer and stick writer:** on the stick, never run on a Windows PC. The macOS installer is not on the stick.
+- **Install to an internal disk:** not in this image.
+- **One model across several cards:** groundwork only.
+- **64-bit ARM:** boots in an emulator, nothing more.
+- **New Inkling speed options** (lookup drafts, new attention forms) and the `qad-dense` quantizer: present, off by default, not measured.
+
+**Speed** (Inkling-2-Mini, one Radeon RX 7900 XTX, after a 16,384-token prompt, November 27–28)
+
+| | Reads the prompt | Generates |
+|---|---:|---:|
+| LexiEngine `d484004` | 2,244 tok/s | 64.6 tok/s, 131.1 with the draft head |
+| llama.cpp b12722 | 1,060 | 42.9 |
+| Strata 0.2.23 (8-bit cache) | 2,075 | 53.9 |
+
+At a 261,632-token prompt LexiEngine reads at 1,157 tok/s and generates at 48.7 (63.2 with the draft head). The llama.cpp row is the build of November 25, because the build of November 28 ran this model at 7.6 tok/s on this card. Other models have not been measured on this version yet. Tables and method: [Benchmarks](https://github.com/W61k3r/LexiSuite-Releases/wiki/Benchmarks).
+
+**Tested:** every test in the tree, 17,932 run, none failed. Both images passed nine boot checks in a virtual machine. Not booted on a physical machine.
+
+**Download**
+
+- `LexiSuite-d484004-secureboot-dev.img.xz`, 381 MB, SHA-256 `992ab9a8b2be6e5b60823211e04bd2524170c7ee4f4c472ed86a59e9cc1e6a08`: [download page](https://lexipanel.com/download/)
+- `LexiSuite-d484004-inkling-secureboot-dev.img.xz`, 18.1 GB, SHA-256 `b3d691539d0ad3f65ff5ed09e87724440e4ba09e32bcabe3fec4054853218193`: [Hugging Face](https://huggingface.co/Wa1k3r/Inkling-2-Mini-NVFP4exp-Q8-draft-LexiSuite-AIO-for-AMD-RDNA)
+
+**Everything that changed:** [all 206 changes, one line each](https://github.com/W61k3r/LexiSuite-Releases/wiki/Changes-d484004).
+
+*Corrected November 28: the site's front page showed an old version label, and the README claimed every benchmark in it was recent while its lead tables were nine days old. Both are fixed, and tables from older versions are now labeled as such.*
 
 ## New in version `8f6f542` (11/25/2026)
 
